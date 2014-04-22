@@ -32,7 +32,7 @@ namespace Sharp2048
 
         public void MoveLeft(IGameState state)
         {
-            bool merged = false;
+            bool moved = false;
             for (int i=0; i<state.Size; i++)
             {
                 var gameArray = state.GetRow(i);
@@ -40,11 +40,11 @@ namespace Sharp2048
                 if (result.Moved || result.Merged)
                 {
                     state.Set(gameArray, i);
-                    merged |= result.Merged;
+                    moved = true;
                 }
             }
 
-            if (merged)
+            if (moved)
             {
                 AddRandomTile(state);
             }
@@ -52,7 +52,7 @@ namespace Sharp2048
 
         public void MoveRight(IGameState state)
         {
-            bool merged = false;
+            bool moved = false;
             for (int i = 0; i < state.Size; i++)
             {
                 var gameArray = state.GetRow(i);
@@ -60,11 +60,11 @@ namespace Sharp2048
                 if (result.Moved || result.Merged)
                 {
                     state.Set(gameArray, i);
-                    merged |= result.Merged;
+                    moved = true;
                 }
             }
 
-            if (merged)
+            if (moved)
             {
                 AddRandomTile(state);
             }
@@ -72,7 +72,7 @@ namespace Sharp2048
 
         public void MoveUp(IGameState state)
         {
-            bool merged = false;
+            bool moved = false;
             for (int i = 0; i < state.Size; i++)
             {
                 var gameArray = state.GetCol(i);
@@ -80,11 +80,11 @@ namespace Sharp2048
                 if (result.Moved || result.Merged)
                 {
                     state.Set(gameArray, i);
-                    merged |= result.Merged;
+                    moved = true;
                 }
             }
 
-            if (merged)
+            if (moved)
             {
                 AddRandomTile(state);
             }
@@ -92,7 +92,7 @@ namespace Sharp2048
 
         public void MoveDown(IGameState state)
         {
-            bool merged = false;
+            bool moved = false;
             for (int i = 0; i < state.Size; i++)
             {
                 var gameArray = state.GetCol(i);
@@ -100,11 +100,11 @@ namespace Sharp2048
                 if (result.Moved || result.Merged)
                 {
                     state.Set(gameArray, i);
-                    merged |= result.Merged;
+                    moved = true;
                 }
             }
 
-            if (merged)
+            if (moved)
             {
                 AddRandomTile(state);
             }
@@ -115,7 +115,7 @@ namespace Sharp2048
             var possibilities = new List<Tuple<int, int>>();
             for (int i=0; i<state.Size; i++)
             {
-                for (int j=0; j<state.Size; i++)
+                for (int j=0; j<state.Size; j++)
                 {
                     if (state.Get(i, j) == 0)
                     {
@@ -138,46 +138,44 @@ namespace Sharp2048
         {
             var result = new ProcessResult();
 
+            var merged = new bool[array.Values.Length];
             int crnt = 0;
             int delta = 1;
             int max = array.Values.Length;
-            if (direction == Direction.Negative)
+            int min = -1;
+            if (direction == Direction.Positive)
             {
                 crnt = array.Values.Length - 1;
                 delta = -1;
                 max = -1;
+                min = array.Values.Length;
             }
 
             for (int i = crnt + delta; i != max; i+=delta )
             {
-                if (array.Values[i-delta] == 0)
-                {
-                    continue;
-                }
-                if (array.Values[i] == array.Values[i-delta])
-                {
-                    array.Values[i] *= 2;
-                    array.Values[i - delta] = 0;
-                    result.Merged = true;
-                }
-            }
-
-            for (int i = crnt; i != max; i += delta)
-            {
                 if (array.Values[i] == 0)
                 {
                     continue;
-                }
+                } 
+                
+                // Move all the way
                 int j = i;
-                while (j+delta != max && array.Values[j+delta] == 0)
+                while (j - delta != min && array.Values[j - delta] == 0)
                 {
-                    j += delta;
+                    j -= delta;
                 }
-                if (j!=i)
+                if (j != i)
                 {
                     array.Values[j] = array.Values[i];
                     array.Values[i] = 0;
                     result.Moved = true;
+                }
+                if (j-delta != min && !merged[j-delta] && array.Values[j] == array.Values[j-delta])
+                {
+                    array.Values[j - delta] *= 2;
+                    array.Values[j] = 0;
+                    merged[j-delta] = true;
+                    result.Merged = true;
                 }
             }
 
