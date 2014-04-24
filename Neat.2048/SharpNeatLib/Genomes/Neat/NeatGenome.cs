@@ -542,8 +542,16 @@ namespace SharpNeat.Genomes.Neat
                         EvolutionMetaData.ChangeType = ChangeTypeEnum.DeleteConnection;
                         break;
                     case 5:
-                        success = structureChange = (null != Mutate_DeleteNode());
-                        EvolutionMetaData.ChangeType = ChangeTypeEnum.DeleteNode;
+                        var result = Mutate_DeleteNode();
+                        if (result == null)
+                        {
+                            EvolutionMetaData.ChangeType = ChangeTypeEnum.WeightChange;
+                        }
+                        else
+                        {
+                            EvolutionMetaData.ChangeType = ChangeTypeEnum.DeleteNode;
+                        }
+                        success = true;
                         break;
                     default:
                         throw new SharpNeatException(string.Format("NeatGenome.Mutate(): Unexpected outcome value [{0}]", outcome));
@@ -950,7 +958,190 @@ namespace SharpNeat.Genomes.Neat
         /// <returns></returns>
         private NeuronGene Mutate_DeleteNode()
         {
-            throw new NotImplementedException();
+            if (_neuronGeneList.Count == 0 || _connectionGeneList.Count < 2)
+            {   // Mutate weights instead.
+                Mutate_ConnectionWeights();
+                return null;
+            }
+
+            // Build a dictionary of hidden neuron IDs and their associated input and output connections.
+            // This helps us identify the simple structures.
+            var tmpDict = BuildHiddenNeuronConnectionsLookupDictionary();
+
+            // Build a list of candidate simple neurons to choose from.
+            var simpleNeuronList = new List<NeuronConnectionsLookup>(tmpDict.Count);
+            foreach (var lookup in tmpDict.Values)
+            {
+                // We can also handle neurons with 0 connections on one or both sides.
+                if ((lookup._inputConnectionList.Count < 2) || (lookup._outputConnectionList.Count < 2))
+                {
+                    simpleNeuronList.Add(lookup);
+                }
+            }
+
+            if (0 == simpleNeuronList.Count)
+            {   // No candidate neurons. As a fallback Mutate weights instead.
+                Mutate_ConnectionWeights();
+                return null;
+            }
+
+            // Pick a simple neuron at random and remove it.
+            NeuronConnectionsLookup neuronLookup = simpleNeuronList[_genomeFactory.Rng.Next(simpleNeuronList.Count)];
+            var result = RemoveSimpleNeuron(neuronLookup);
+            _genomeFactory.Stats._mutationCountDeleteSimpleNeuron++;
+            return result;
+        }
+
+        private NeuronGene RemoveSimpleNeuron(NeuronConnectionsLookup lookup)
+        {
+            // Delete all existing connections that attach to the neuron that is to be removed. We do this
+            // before adding new connections that are substitutes for the deleted connections; This means we 
+            // don't have both the old and new conenctions in connectionList at the same time, which would temporarily
+            // increase the length of the list beyond its current capacity, therefore requiring an expensive
+            // increase in capacity.
+
+            // ENHANCEMENT: Connection removals can be performed more efficiently with List<>.RemoveAll(Predicate<T>)...
+            // ...This prevents us having to shuffle the list items to fill the gaps on each individual remove.
+            foreach (ConnectionGene incomingConnection in lookup._inputConnectionList)
+            {
+                _connectionGeneList.Remove(incomingConnection.InnovationId);
+            }
+
+            foreach (ConnectionGene outgoingConnection in lookup._outputConnectionList)
+            {   // Filter out recurrent connections - they will have already been 
+                // deleted in the loop through incoming connections (above).
+                if (outgoingConnection.TargetNodeId != lookup._neuronId)
+                {
+                    _connectionGeneList.Remove(outgoingConnection.InnovationId);
+                }
+            }
+
+            // Create new connections that connect all of the incoming and outgoing neurons
+            // that currently exist for the simple neuron (if any).
+            foreach (ConnectionGene inputConnection in lookup._inputConnectionList)
+            {
+                foreach (ConnectionGene outputConnection in lookup._outputConnectionList)
+                {
+                    uint sourceId = inputConnection.InnovationId;
+                    uint targetId = outputConnection.InnovationId;
+
+                    if ((sourceId == targetId) || TestForExistingConnection(sourceId, targetId))
+                    {   // Connection is recurrent or already already exists.
+                        // Note that recurrent connections are handled by TestForExistingConnection() but we include the
+                        // explcit test because it is fast and also to be clear of our intentions - recurrent connections
+                        // are discarded with the neuron and no substituting connections are made.
+                        continue;
+                    }
+
+                    // Check if a matching mutation has already occured on another genome. 
+                    // If so then re-use the connection ID.
+                    ConnectionEndpointsStruct connectionKey = new ConnectionEndpointsStruct(sourceId, targetId);
+                    uint? existingConnectionId;
+                    if (_genomeFactory.AddedConnectionBuffer.TryGetValue(connectionKey, out existingConnectionId))
+                    {
+                        // Create a new connection re-using existingConnectionId, and add it to the Genome.
+                        // Also re-use a weight from one of the connections we are replacing.
+                        // ENHANCEMENT: Is there a better weight we could use here?
+                        ConnectionGene newConnectionGene = new ConnectionGene(existingConnectionId.Value,
+                                                                              sourceId, targetId,
+                                                                              outputConnection.Weight);
+
+                        // Add the new gene to this genome. We are re-using an ID so we must ensure the connection gene is
+                        // inserted into the correct position (sorted by innovation ID).
+                        _connectionGeneList.InsertIntoPosition(newConnectionGene);
+                    }
+                    else
+                    {
+                        // Create a new connection with a new ID and add it to the Genome.
+                        // Also re-use a weight from one of the connections we are replacing.
+                        // ENHANCEMENT: Is there a better weight we could use here?
+                        ConnectionGene newConnectionGene = new ConnectionGene(_genomeFactory.NextInnovationId(),
+                                                                              sourceId, targetId,
+                                                                              outputConnection.Weight);
+
+                        // Add the new gene to this genome. We have a new ID so we can safely append the gene to the end 
+                        // of the list without risk of breaking the innovation ID sort order.
+                        _connectionGeneList.Add(newConnectionGene);
+
+                        // Register the new connection with the added connection history buffer.
+                        _genomeFactory.AddedConnectionBuffer.Enqueue(new ConnectionEndpointsStruct(sourceId, targetId),
+                                                                     newConnectionGene.InnovationId);
+                    }
+                }
+            }
+
+            // Delete the simple neuron - it no longer has any connections to or from it.
+            var neuron = _neuronGeneList.GetNeuronById(lookup._neuronId);
+            _neuronGeneList.Remove(lookup._neuronId);
+            return neuron;
+        }
+
+        /// <summary>
+        /// Tests for an existing connection between a source and target neuron specified by innovation ID.
+        /// </summary>
+        private bool TestForExistingConnection(uint sourceId, uint targetId)
+        {
+            // ENHANCEMENT: Consider using a hashmap to speed-up connection lookups.
+            int count = _connectionGeneList.Count;
+            for (int i = 0; i < count; i++)
+            {
+                if (_connectionGeneList[i].SourceNodeId == sourceId
+                && _connectionGeneList[i].TargetNodeId == targetId)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Builds a dictionary for temporary use required by Mutate_DeleteSimpleNeuronStructure() and 
+        /// RemoveSimpleNeuron().
+        /// 
+        /// The dictionary keys all hidden neurons by their ID. The keyed value is a NeuronConnectionsLookup
+        /// object which lists all of the neuron's incoming and outgoing connections in two separate lists.
+        /// </summary>
+        private Dictionary<uint, NeuronConnectionsLookup> BuildHiddenNeuronConnectionsLookupDictionary()
+        {
+            Dictionary<uint, NeuronConnectionsLookup> tmpDict
+                = new Dictionary<uint, NeuronConnectionsLookup>(_neuronGeneList.Count - _inputBiasOutputNeuronCount);
+
+            // Create a dictionary entry for all hidden neurons.
+            // Loop over all hidden neurons. A fast way to do this is to skip over the bias, input and output neurons
+            // that are always at the head of the neuron list.
+            int neuronCount = _neuronGeneList.Count;
+            for (int neuronIdx = _inputBiasOutputNeuronCount; neuronIdx < neuronCount; neuronIdx++)
+            {
+                var lookup = new NeuronConnectionsLookup();
+                lookup._neuronId = _neuronGeneList[neuronIdx].InnovationId;
+            }
+
+            // Loop over all connections for this genome. Registering them with NeuronConnectionsLookup against 
+            // the neurons they connect to.
+            foreach (ConnectionGene connectionGene in _connectionGeneList)
+            {
+                // Lookup the neuron IDs at the connection endpoints. Remember that bias, input and output neurons
+                // aren't in the dictionary, hence we use TryGetValue instead of a straight lookup; We're only tracking
+                // connections to hidden neurons.
+                NeuronConnectionsLookup lookup;
+                if (tmpDict.TryGetValue(connectionGene.SourceNodeId, out lookup))
+                {
+                    lookup._outputConnectionList.Add(connectionGene);
+                }
+                if (tmpDict.TryGetValue(connectionGene.TargetNodeId, out lookup))
+                {
+                    lookup._inputConnectionList.Add(connectionGene);
+                }
+            }
+            return tmpDict;
+        }
+
+
+        class NeuronConnectionsLookup
+        {
+            public uint _neuronId;
+            public readonly List<ConnectionGene> _inputConnectionList = new List<ConnectionGene>();
+            public readonly List<ConnectionGene> _outputConnectionList = new List<ConnectionGene>();
         }
 
         /// <summary>

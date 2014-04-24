@@ -440,8 +440,8 @@ The problem domain view allows the performance of the best genome to be observed
     <AssemblyPath>SharpNeatDomains.dll</AssemblyPath>
     <ClassName>SharpNeat.Domains.Sharp2048Experiment</ClassName>
     <Config>
-      <PopulationSize>500</PopulationSize>
-      <SpecieCount>40</SpecieCount>
+      <PopulationSize>300</PopulationSize>
+      <SpecieCount>25</SpecieCount>
       <Activation>
         <Scheme>FixedIters</Scheme>
         <Iters>4</Iters>
