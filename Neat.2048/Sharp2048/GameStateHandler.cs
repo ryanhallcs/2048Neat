@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpNeat.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,21 +9,21 @@ namespace Sharp2048
 {
     public interface IGameStateHandler
     {
-        void MoveLeft(IGameState state);
-        void MoveRight(IGameState state);
-        void MoveUp(IGameState state);
-        void MoveDown(IGameState state);
+        MoveResult MoveLeft(IGameState state);
+        MoveResult MoveRight(IGameState state);
+        MoveResult MoveUp(IGameState state);
+        MoveResult MoveDown(IGameState state);
         void ClearGameState(IGameState state);
-        void AddRandomTile(IGameState state);
+        void AddRandomTile(IGameState state, MoveResult lastResult);
     }
 
-    public class GameStateHandler:IGameStateHandler
+    public class GameStateHandler : IGameStateHandler
     {
-        private readonly Random _rng;
+        private readonly FastRandom _rng;
 
         public GameStateHandler()
         {
-            _rng = new Random();
+            _rng = new FastRandom();
         }
 
         public void ClearGameState(IGameState state)
@@ -30,98 +31,40 @@ namespace Sharp2048
             state.Reset();
         }
 
-        public void MoveLeft(IGameState state)
+        public MoveResult MoveLeft(IGameState state)
         {
-            bool moved = false;
-            for (int i=0; i<state.Size; i++)
-            {
-                var gameArray = state.GetRow(i);
-                var result = _process(gameArray, Direction.Negative);
-                if (result.Moved || result.Merged)
-                {
-                    state.Set(gameArray, i);
-                    moved = true;
-                }
-            }
-
-            if (moved)
-            {
-                AddRandomTile(state);
-            }
+            return _move(state, (s, i) => s.GetRow(i), (rc, idx) => Tuple.Create(rc, idx), Direction.Negative);
         }
 
-        public void MoveRight(IGameState state)
+        public MoveResult MoveRight(IGameState state)
         {
-            bool moved = false;
-            for (int i = 0; i < state.Size; i++)
-            {
-                var gameArray = state.GetRow(i);
-                var result = _process(gameArray, Direction.Positive);
-                if (result.Moved || result.Merged)
-                {
-                    state.Set(gameArray, i);
-                    moved = true;
-                }
-            }
-
-            if (moved)
-            {
-                AddRandomTile(state);
-            }
+            return _move(state, (s, i) => s.GetRow(i), (rc, idx) => Tuple.Create(rc, idx), Direction.Positive);
         }
 
-        public void MoveUp(IGameState state)
+        public MoveResult MoveUp(IGameState state)
         {
-            bool moved = false;
-            for (int i = 0; i < state.Size; i++)
-            {
-                var gameArray = state.GetCol(i);
-                var result = _process(gameArray, Direction.Negative);
-                if (result.Moved || result.Merged)
-                {
-                    state.Set(gameArray, i);
-                    moved = true;
-                }
-            }
-
-            if (moved)
-            {
-                AddRandomTile(state);
-            }
+            return _move(state, (s, i) => s.GetCol(i), (rc, idx) => Tuple.Create(idx, rc), Direction.Negative);
         }
 
-        public void MoveDown(IGameState state)
+        public MoveResult MoveDown(IGameState state)
         {
-            bool moved = false;
-            for (int i = 0; i < state.Size; i++)
-            {
-                var gameArray = state.GetCol(i);
-                var result = _process(gameArray, Direction.Positive);
-                if (result.Moved || result.Merged)
-                {
-                    state.Set(gameArray, i);
-                    moved = true;
-                }
-            }
-
-            if (moved)
-            {
-                AddRandomTile(state);
-            }
+            return _move(state, (s, i) => s.GetCol(i), (rc, idx) => Tuple.Create(idx, rc), Direction.Positive);
         }
 
-        public void AddRandomTile(IGameState state)
+        public void AddRandomTile(IGameState state, MoveResult lastMove)
         {
-            var possibilities = new List<Tuple<int, int>>();
-            for (int i=0; i<state.Size; i++)
+            List<Tuple<int, int>> possibilities = null;
+            if (lastMove == null)
             {
-                for (int j=0; j<state.Size; j++)
-                {
-                    if (state.Get(i, j) == 0)
-                    {
-                        possibilities.Add(new Tuple<int, int>(i, j));
-                    }
-                }
+                possibilities = new List<Tuple<int, int>>();
+                for (int i = 0; i < state.Size; i++)
+                    for (int j = 0; j < state.Size; j++)
+                        if (state.Get(i, j) == 0)
+                            possibilities.Add(Tuple.Create(i, j));
+            }
+            else
+            {
+                possibilities = lastMove.CurrentZeros;
             }
 
             if (possibilities.Count == 0)
@@ -134,9 +77,41 @@ namespace Sharp2048
             state.Set(newIdx.Item1, newIdx.Item2, newVal);
         }
 
+        private MoveResult _move(IGameState state, Func<IGameState, int, GameArray> getArray, Func<int, int, Tuple<int,int>> processZeroes, Direction direction)
+        {
+            var result = new MoveResult { GameOver = true, CurrentZeros = new List<Tuple<int,int>>() };
+
+            bool moved = false;
+            for (int i = 0; i < state.Size; i++)
+            {
+                var gameArray = getArray(state, i);
+                var processed = _process(gameArray, direction);
+                result.Score += processed.Score;
+                result.HighestBlock = Math.Max(processed.HighestBlock, result.HighestBlock);
+                result.CurrentZeros.AddRange(processed.CurrentZeros.Select(a => processZeroes(i, a)));
+                if (processed.Moved || processed.Merged)
+                {
+                    state.Set(gameArray, i);
+                    moved = true;
+                }
+            }
+
+            if (moved)
+            {
+                AddRandomTile(state, result);
+                result.StateChange = true;
+            }
+
+            result.GameOver = !result.CurrentZeros.Any();
+
+            return result;
+        }
+
         private ProcessResult _process(GameArray array, Direction direction)
         {
             var result = new ProcessResult();
+            result.CurrentZeros = new List<int>();
+            result.Full = true;
 
             var merged = new bool[array.Values.Length];
             int crnt = 0;
@@ -151,13 +126,23 @@ namespace Sharp2048
                 min = array.Values.Length;
             }
 
+            if (array.Values[crnt] == 0)
+            {
+                result.Full = false;
+            }
+
+            result.HighestBlock = array.Values[crnt];
+
             for (int i = crnt + delta; i != max; i+=delta )
             {
                 if (array.Values[i] == 0)
                 {
+                    result.Full = false;
                     continue;
-                } 
-                
+                }
+
+                result.HighestBlock = Math.Max(result.HighestBlock, array.Values[i]);
+
                 // Move all the way
                 int j = i;
                 while (j - delta != min && array.Values[j - delta] == 0)
@@ -169,13 +154,24 @@ namespace Sharp2048
                     array.Values[j] = array.Values[i];
                     array.Values[i] = 0;
                     result.Moved = true;
+                    result.Full = false;
                 }
                 if (j-delta != min && !merged[j-delta] && array.Values[j] == array.Values[j-delta])
                 {
                     array.Values[j - delta] *= 2;
+                    result.Score += array.Values[j - delta];
                     array.Values[j] = 0;
                     merged[j-delta] = true;
                     result.Merged = true;
+                    result.Full = false;
+                }
+            }
+
+            for (int i = 0; i < array.Values.Length; i++)
+            {
+                if (array.Values[i] == 0)
+                {
+                    result.CurrentZeros.Add(i);
                 }
             }
 
@@ -192,6 +188,26 @@ namespace Sharp2048
         {
             public bool Merged { get; set; }
             public bool Moved { get; set; }
+
+            public int Score { get; set; }
+            public bool Full { get; set; }
+
+            public int HighestBlock { get; set; }
+
+            public List<int> CurrentZeros { get; set; }
         }
+    }
+
+    public class MoveResult
+    {
+        public int Score { get; set; }
+
+        public int HighestBlock { get; set; }
+
+        public bool GameOver { get; set; }
+
+        public bool StateChange { get; set; }
+
+        public List<Tuple<int, int>> CurrentZeros { get; set; }
     }
 }

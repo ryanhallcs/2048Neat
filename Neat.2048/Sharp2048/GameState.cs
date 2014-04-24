@@ -18,6 +18,8 @@ namespace Sharp2048
         void Set(GameArray array, int idx);
 
         bool IsGameOver();
+
+        int[,] GetInternalState();
     }
     public class GameState : IGameState
     {
@@ -102,6 +104,12 @@ namespace Sharp2048
                 }
             }
             return true;
+        }
+
+
+        public int[,] GetInternalState()
+        {
+            return _internalArray;
         }
     }
 

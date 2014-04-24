@@ -12,8 +12,8 @@ namespace Sharp2048.Console
         {
             var initialState = new GameState(4);
             var handler = new GameStateHandler();
-            handler.AddRandomTile(initialState);
-            handler.AddRandomTile(initialState);
+            handler.AddRandomTile(initialState, null);
+            handler.AddRandomTile(initialState, null);
             var runner = new Runner(handler, initialState);
             runner.Run();
         }

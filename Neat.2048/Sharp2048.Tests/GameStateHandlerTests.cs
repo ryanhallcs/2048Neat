@@ -274,9 +274,79 @@ namespace Sharp2048.Tests
             Assert.That(gameState.Get(1, 0), Is.EqualTo(4));
         }
 
+        [Test]
         public void NoNewIfNoMerge()
         {
 
+            int size = 4;
+
+            var sut = new GameStateHandler();
+            var gameState = new GameState(size);
+            gameState.Set(0, 0, 2);
+            var result = sut.MoveUp(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(2));
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.False);
+        }
+
+        [Test]
+        public void NoNewIfFull()
+        {
+            int size = 4;
+
+            var sut = new GameStateHandler();
+            var gameState = new GameState(size);
+            gameState.Set(0, 0, 2);
+            gameState.Set(0, 1, 4);
+            gameState.Set(0, 2, 8);
+            gameState.Set(0, 3, 16);
+            var result = sut.MoveRight(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(2));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(4));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(8));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(16));
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.False);
+        }
+
+        [Test]
+        public void TestGameOver()
+        {
+            int size = 4;
+
+            var sut = new GameStateHandler();
+            var gameState = new GameState(size);
+            gameState.Set(0, 0, 2);
+            gameState.Set(0, 1, 4);
+            gameState.Set(0, 2, 8);
+            gameState.Set(0, 3, 16);
+            gameState.Set(1, 0, 16);
+            gameState.Set(1, 1, 8);
+            gameState.Set(1, 2, 4);
+            gameState.Set(1, 3, 2);
+            gameState.Set(2, 0, 2);
+            gameState.Set(2, 1, 4);
+            gameState.Set(2, 2, 8);
+            gameState.Set(2, 3, 16);
+            gameState.Set(3, 0, 16);
+            gameState.Set(3, 1, 8);
+            gameState.Set(3, 2, 4);
+            gameState.Set(3, 3, 2);
+
+            var result = sut.MoveRight(gameState);
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.True);
+            result = sut.MoveLeft(gameState);
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.True);
+            result = sut.MoveUp(gameState);
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.True);
+            result = sut.MoveDown(gameState);
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.True);
         }
     }
 }
