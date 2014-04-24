@@ -317,7 +317,7 @@ namespace SharpNeatGUI
             ngParams.ConnectionWeightMutationProbability = ParseDouble(txtParamMutateConnectionWeights, ngParams.ConnectionWeightMutationProbability);
             ngParams.AddNodeMutationProbability = ParseDouble(txtParamMutateAddNode, ngParams.AddNodeMutationProbability);
             ngParams.AddConnectionMutationProbability = ParseDouble(txtParamMutateAddConnection, ngParams.AddConnectionMutationProbability);
-            //ngParams.DeleteSimpleNeuronMutationProbability = ParseDouble(txtParamMutateDeleteNeuron, ngParams.DeleteSimpleNeuronMutationProbability);
+            ngParams.DeleteSimpleNeuronMutationProbability = ParseDouble(txtParamMutateDeleteNeuron, ngParams.DeleteSimpleNeuronMutationProbability);
             ngParams.DeleteConnectionMutationProbability = ParseDouble(txtParamMutateDeleteConnection, ngParams.DeleteConnectionMutationProbability);
             
         }
