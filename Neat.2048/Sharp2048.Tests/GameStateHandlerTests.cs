@@ -348,5 +348,53 @@ namespace Sharp2048.Tests
             Assert.That(result.StateChange, Is.False);
             Assert.That(result.GameOver, Is.True);
         }
+
+        [Test]
+        public void TestScoring()
+        {
+            int size = 4;
+
+            var sut = new GameStateHandler();
+            var gameState = new GameState(size);
+            gameState.Set(0, 0, 2);
+            gameState.Set(0, 1, 2);
+            gameState.Set(0, 2, 0);
+            gameState.Set(0, 3, 0);
+            var result = sut.MoveLeft(gameState);
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.Score, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void TestScoringMultiple()
+        {
+            int size = 4;
+
+            var sut = new GameStateHandler();
+            var gameState = new GameState(size);
+            gameState.Set(0, 0, 2);
+            gameState.Set(0, 1, 2);
+            gameState.Set(0, 2, 2);
+            gameState.Set(0, 3, 2);
+            var result = sut.MoveLeft(gameState);
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.Score, Is.EqualTo(8));
+            gameState = new GameState(size);
+            gameState.Set(0, 0, 4);
+            gameState.Set(0, 1, 4);
+            gameState.Set(0, 2, 0);
+            gameState.Set(0, 3, 0);
+            result = sut.MoveLeft(gameState);
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.Score, Is.EqualTo(8));
+
+            gameState = new GameState(size);
+            result = sut.MoveLeft(gameState);
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.Score, Is.EqualTo(0));
+        }
+
     }
 }

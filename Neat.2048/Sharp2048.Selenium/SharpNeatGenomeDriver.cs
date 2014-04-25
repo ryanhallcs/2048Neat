@@ -103,7 +103,6 @@ namespace Sharp2048.Selenium
             if (box.OutputSignalArray[3] > crMax)
             {
                 result = DriverMove.Up;
-                crMax = box.OutputSignalArray[3];
             }
 
             return result;
@@ -120,7 +119,8 @@ namespace Sharp2048.Selenium
                     {
                         var val = _driver.FindElement(By.ClassName("tile-container"))
                             .FindElement(By.ClassName(String.Format("tile-position-{0}-{1}", j, i)))
-                            .FindElement(By.ClassName("tile-inner")).Text;
+                            .FindElement(By.ClassName("tile-inner"))
+                            .Text;
                         gameState.Set(i-1, j-1, int.Parse(val));
                     }
                     catch

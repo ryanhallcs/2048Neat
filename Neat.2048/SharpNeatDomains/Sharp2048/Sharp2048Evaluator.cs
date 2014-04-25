@@ -55,9 +55,10 @@ namespace SharpNeat.Domains
             while (!gameController.IsFinished() && noChange < _maxNoChange)
             {
                 var state = gameController.GetState();
-                for (int i = 0; i < state.GetLength(0); i++)
-                    for (int j = 0; j < state.GetLength(1); j++)
-                        phenome.InputSignalArray[i * state.GetLength(0) + j] = (double)state[i, j];
+                var n = state.GetLength(0);
+                for (int i = 0; i < n; i++)
+                    for (int j = 0; j < n; j++)
+                        phenome.InputSignalArray[i * n + j] = state[i, j];
 
                 phenome.Activate();
 
@@ -76,7 +77,6 @@ namespace SharpNeat.Domains
                 if (phenome.OutputSignalArray[3] > crMax)
                 {
                     idx = 3;
-                    crMax = phenome.OutputSignalArray[3];
                 }
 
                 switch (idx)

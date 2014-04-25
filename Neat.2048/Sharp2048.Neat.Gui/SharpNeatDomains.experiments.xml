@@ -1,6 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Experiments>
 
+
+  <Experiment name="Sharp2048">
+    <AssemblyPath>SharpNeatDomains.dll</AssemblyPath>
+    <ClassName>SharpNeat.Domains.Sharp2048Experiment</ClassName>
+    <Config>
+      <PopulationSize>300</PopulationSize>
+      <SpecieCount>25</SpecieCount>
+      <Activation>
+        <Scheme>FixedIters</Scheme>
+        <Iters>1</Iters>
+      </Activation>
+      <MaxDegreeOfParallelism>3</MaxDegreeOfParallelism>
+      <ComplexityRegulationStrategy>Relative</ComplexityRegulationStrategy>
+      <ComplexityThreshold>10</ComplexityThreshold>
+      <Variant>2048</Variant>
+      <Description>
+        2048
+
+        Popularized by http://gabrielecirulli.github.io/2048/, this is an evolution to get the maximum possible score of moving and merging these power of 2 tiles
+
+        The controller is considered to have failed when there are no moves left to make.
+
+        This controller uses discretized inputs ranging from 0 to 4.
+      </Description>
+    </Config>
+  </Experiment>
+
   <Experiment name="Binary 3-Multiplexer (NEAT)">
     <AssemblyPath>SharpNeatDomains.dll</AssemblyPath>
     <ClassName>SharpNeat.Domains.BinaryThreeMultiplexer.BinaryThreeMultiplexerExperiment</ClassName>
@@ -432,31 +459,6 @@ The task involves a visual field of 11x11 binary pixels (on/off, black/white). T
 A single evaluation consists of 75 test cases with the two boxes randomly positioned. The root mean squared distance between selected and target pixels is scaled and translated to a range of 0-100, where 0 = no better than an agent randomly selecting pixels and 100 = perfect. In addition to this the range of output values is scaled to 0-10 and added to the final score, this encourages solutions with a wide output range between the highest activation (the selected pixel) and the lowest activation (this encourages prominent/clear selection).
 
 The problem domain view allows the performance of the best genome to be observed. The view also allows the HyperNEAT genome to be decoded using a range of visual field pixel resolutions beyond the 11x11 resolution that genomes are trained with. The ability to do this is a feature of HyperNEAT - the evolved genomes are Compositional Pattern Producing Networks (CPPNs). A CPPN defines the connection strength between nodes positioned in some euclidean space and therefore we can use a CPPN to produce neural networks with more nodes by increasing the number and density of nodes.
-      </Description>
-    </Config>
-  </Experiment>
-
-  <Experiment name="Sharp2048">
-    <AssemblyPath>SharpNeatDomains.dll</AssemblyPath>
-    <ClassName>SharpNeat.Domains.Sharp2048Experiment</ClassName>
-    <Config>
-      <PopulationSize>300</PopulationSize>
-      <SpecieCount>25</SpecieCount>
-      <Activation>
-        <Scheme>FixedIters</Scheme>
-        <Iters>4</Iters>
-      </Activation>
-      <ComplexityRegulationStrategy>Relative</ComplexityRegulationStrategy>
-      <ComplexityThreshold>20</ComplexityThreshold>
-      <Variant>2048</Variant>
-      <Description>
-        2048
-
-        Popularized by http://gabrielecirulli.github.io/2048/, this is an evolution to get the maximum possible score of moving and merging these power of 2 tiles
-
-        The controller is considered to have failed when there are no moves left to make.
-
-        This controller uses discretized inputs ranging from 0 to 4.
       </Description>
     </Config>
   </Experiment>
