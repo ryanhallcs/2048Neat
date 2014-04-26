@@ -136,7 +136,9 @@
     <EmbeddedResource Include="TimeSeriesGraphForm.resx">
       <DependentUpon>TimeSeriesGraphForm.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="log4net.properties" />
+    <None Include="log4net.properties">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

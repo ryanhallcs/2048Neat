@@ -31,6 +31,7 @@ namespace Sharp2048.Selenium
             var actions = new Actions(_driver);
 
             var state = GetCurrentState(4);
+            _phenome.ResetState();
 
             while (!IsFinished(state))
             {
@@ -71,10 +72,12 @@ namespace Sharp2048.Selenium
             for (int i=0; i<state.Size; i++)
             {
                 var row = state.GetRow(i);
-                foreach (var val in row.Values)
+                for (int j = 0; j < state.Size; j++)
                 {
-                    if (val == 0)
+                    if (row.GetVal(j) == 0)
+                    {
                         return false;
+                    }
                 }
             }
 
@@ -85,7 +88,8 @@ namespace Sharp2048.Selenium
         {
             for (int i = 0; i < state.Size; i++)
                 for (int j = 0; j < state.Size; j++)
-                    box.InputSignalArray[i * state.Size + j] = state.Get(i, j);
+                    box.InputSignalArray[i * state.Size + j] = Math.Log(state.Get(i, j), 2);
+            box.ResetState();
             box.Activate();
 
             var result = DriverMove.Left;

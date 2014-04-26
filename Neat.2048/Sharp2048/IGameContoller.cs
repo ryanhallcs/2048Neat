@@ -22,6 +22,8 @@ namespace Sharp2048
         bool MovedLastTurn();
 
         int HighestSeenBlock { get; }
+
+        string GetStateString();
     }
 
     public class Sharp2048GameController : IGameContoller
@@ -44,6 +46,10 @@ namespace Sharp2048
             _lastMoveResult = _handler.MoveLeft(_gameState);
             _totalScore += _lastMoveResult.Score;
             _highestSeen = Math.Max(_highestSeen, _lastMoveResult.HighestBlock);
+            if (_lastMoveResult.StateChange)
+            {
+                _handler.AddRandomTile(_gameState, _lastMoveResult);
+            }
         }
 
         public void Right()
@@ -51,6 +57,10 @@ namespace Sharp2048
             _lastMoveResult = _handler.MoveRight(_gameState);
             _totalScore += _lastMoveResult.Score;
             _highestSeen = Math.Max(_highestSeen, _lastMoveResult.HighestBlock);
+            if (_lastMoveResult.StateChange)
+            {
+                _handler.AddRandomTile(_gameState, _lastMoveResult);
+            }
         }
 
         public void Up()
@@ -58,6 +68,10 @@ namespace Sharp2048
             _lastMoveResult = _handler.MoveUp(_gameState);
             _totalScore += _lastMoveResult.Score;
             _highestSeen = Math.Max(_highestSeen, _lastMoveResult.HighestBlock);
+            if (_lastMoveResult.StateChange)
+            {
+                _handler.AddRandomTile(_gameState, _lastMoveResult);
+            }
         }
 
         public void Down()
@@ -65,6 +79,10 @@ namespace Sharp2048
             _lastMoveResult = _handler.MoveDown(_gameState);
             _totalScore += _lastMoveResult.Score;
             _highestSeen = Math.Max(_highestSeen, _lastMoveResult.HighestBlock);
+            if (_lastMoveResult.StateChange)
+            {
+                _handler.AddRandomTile(_gameState, _lastMoveResult);
+            }
         }
 
         public bool IsFinished()
@@ -89,6 +107,15 @@ namespace Sharp2048
             _lastMoveResult = null;
             _handler.AddRandomTile(_gameState, null);
             _handler.AddRandomTile(_gameState, null);
+            _highestSeen = 0;
+            for (int i = 0; i < _gameState.Size; i++)
+            {
+                var array = _gameState.GetRow(i);
+                for (int j = 0; j < _gameState.Size; j++)
+                {
+                    _highestSeen = Math.Max(_highestSeen, array.GetVal(j));
+                }
+            }
         }
 
         public int[,] GetState()
@@ -106,6 +133,12 @@ namespace Sharp2048
         public int HighestSeenBlock
         {
             get { return _highestSeen; }
+        }
+
+
+        public string GetStateString()
+        {
+            return _gameState.ToString();
         }
     }
 }

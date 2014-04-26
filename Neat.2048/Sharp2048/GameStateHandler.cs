@@ -25,6 +25,25 @@ namespace Sharp2048
         {
             _rng = new FastRandom();
         }
+        
+        private IGameArray GetRow(IGameState s, int i)
+        {
+            return s.GetRow(i);
+        }
+        private IGameArray GetCol(IGameState s, int i)
+        {
+            return s.GetCol(i);
+        }
+
+        private Tuple<int, int> ProcessZeroesRow(int rc, int idx)
+        {
+            return Tuple.Create(rc, idx);
+        }
+
+        private Tuple<int, int> ProcessZeroesCol(int rc, int idx)
+        {
+            return Tuple.Create(idx, rc);
+        }
 
         public void ClearGameState(IGameState state)
         {
@@ -33,22 +52,22 @@ namespace Sharp2048
 
         public MoveResult MoveLeft(IGameState state)
         {
-            return _move(state, (s, i) => s.GetRow(i), (rc, idx) => Tuple.Create(rc, idx), Direction.Negative);
+            return _move(state, GetRow, ProcessZeroesRow, Direction.Negative);
         }
 
         public MoveResult MoveRight(IGameState state)
         {
-            return _move(state, (s, i) => s.GetRow(i), (rc, idx) => Tuple.Create(rc, idx), Direction.Positive);
+            return _move(state, GetRow, ProcessZeroesRow, Direction.Positive);
         }
 
         public MoveResult MoveUp(IGameState state)
         {
-            return _move(state, (s, i) => s.GetCol(i), (rc, idx) => Tuple.Create(idx, rc), Direction.Negative);
+            return _move(state, GetCol, ProcessZeroesCol, Direction.Negative);
         }
 
         public MoveResult MoveDown(IGameState state)
         {
-            return _move(state, (s, i) => s.GetCol(i), (rc, idx) => Tuple.Create(idx, rc), Direction.Positive);
+            return _move(state, GetCol, ProcessZeroesCol, Direction.Positive);
         }
 
         public void AddRandomTile(IGameState state, MoveResult lastMove)
@@ -77,7 +96,7 @@ namespace Sharp2048
             state.Set(newIdx.Item1, newIdx.Item2, newVal);
         }
 
-        private MoveResult _move(IGameState state, Func<IGameState, int, GameArray> getArray, Func<int, int, Tuple<int,int>> processZeroes, Direction direction)
+        private MoveResult _move(IGameState state, Func<IGameState, int, IGameArray> getArray, Func<int, int, Tuple<int,int>> processZeroes, Direction direction)
         {
             var result = new MoveResult { GameOver = true, CurrentZeros = new List<Tuple<int,int>>() };
 
@@ -89,16 +108,11 @@ namespace Sharp2048
                 result.Score += processed.Score;
                 result.HighestBlock = Math.Max(processed.HighestBlock, result.HighestBlock);
                 result.CurrentZeros.AddRange(processed.CurrentZeros.Select(a => processZeroes(i, a)));
-                if (processed.Moved || processed.Merged)
-                {
-                    state.Set(gameArray, i);
-                    moved = true;
-                }
+                moved |= processed.Moved || processed.Merged;
             }
 
             if (moved)
             {
-                AddRandomTile(state, result);
                 result.StateChange = true;
             }
 
@@ -107,69 +121,69 @@ namespace Sharp2048
             return result;
         }
 
-        private ProcessResult _process(GameArray array, Direction direction)
+        private ProcessResult _process(IGameArray array, Direction direction)
         {
             var result = new ProcessResult();
             result.CurrentZeros = new List<int>();
             result.Full = true;
 
-            var merged = new bool[array.Values.Length];
             int crnt = 0;
             int delta = 1;
-            int max = array.Values.Length;
+            int max = array.Size;
             int min = -1;
+            var merged = new bool[array.Size];
             if (direction == Direction.Positive)
             {
-                crnt = array.Values.Length - 1;
+                crnt = array.Size - 1;
                 delta = -1;
                 max = -1;
-                min = array.Values.Length;
+                min = array.Size;
             }
 
-            if (array.Values[crnt] == 0)
+            if (array.GetVal(crnt) == 0)
             {
                 result.Full = false;
             }
 
-            result.HighestBlock = array.Values[crnt];
+            result.HighestBlock = array.GetVal(crnt);
 
             for (int i = crnt + delta; i != max; i+=delta )
             {
-                if (array.Values[i] == 0)
+                if (array.GetVal(i) == 0)
                 {
                     result.Full = false;
                     continue;
                 }
 
-                result.HighestBlock = Math.Max(result.HighestBlock, array.Values[i]);
+                result.HighestBlock = Math.Max(result.HighestBlock, array.GetVal(i));
 
                 // Move all the way
                 int j = i;
-                while (j - delta != min && array.Values[j - delta] == 0)
+                while (j - delta != min && array.GetVal(j - delta) == 0)
                 {
                     j -= delta;
                 }
                 if (j != i)
                 {
-                    array.Values[j] = array.Values[i];
-                    array.Values[i] = 0;
+                    array.SetVal(j, array.GetVal(i));
+                    array.SetVal(i, 0);
                     result.Moved = true;
                     result.Full = false;
                 }
-                if (j-delta != min && !merged[j-delta] && array.Values[j] == array.Values[j-delta])
+                if (j - delta != min && !merged[j - delta] && array.GetVal(j) == array.GetVal(j - delta))
                 {
-                    array.Values[j - delta] *= 2;
-                    result.Score += array.Values[j - delta];
-                    array.Values[j] = 0;
+                    array.SetVal(j - delta, array.GetVal(j - delta) * 2);
+                    result.Score += array.GetVal(j - delta);
+                    array.SetVal(j, 0);
                     merged[j-delta] = true;
                     result.Merged = true;
                     result.Full = false;
                 }
             }
 
-            for (int i = 0; i < array.Values.Length; i++)
+            for (int i = 0; i < array.Size; i++)
             {
-                if (array.Values[i] == 0)
+                if (array.GetVal(i) == 0)
                 {
                     result.CurrentZeros.Add(i);
                 }

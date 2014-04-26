@@ -103,7 +103,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
 
             gameState = new GameState(size);
             gameState.Set(0, 1, 2);
@@ -116,7 +116,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
 
             gameState = new GameState(size);
             gameState.Set(0, 1, 2);
@@ -129,7 +129,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
         }
 
         [Test]
@@ -149,7 +149,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
 
             gameState = new GameState(size);
             gameState.Set(0, 1, 2);
@@ -162,7 +162,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
 
             gameState = new GameState(size);
             gameState.Set(0, 1, 2);
@@ -175,7 +175,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
         }
 
         [Test]
@@ -195,7 +195,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
 
             gameState = new GameState(size);
             gameState.Set(2, 0, 2);
@@ -208,7 +208,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
 
             gameState = new GameState(size);
             gameState.Set(3, 0, 2);
@@ -221,7 +221,7 @@ namespace Sharp2048.Tests
                 for (int j = 0; j < size; j++)
                     if (gameState.Get(i, j) != 0)
                         cnt++;
-            Assert.That(cnt, Is.EqualTo(2));
+            Assert.That(cnt, Is.EqualTo(1));
         }
 
         [Test]
@@ -364,6 +364,142 @@ namespace Sharp2048.Tests
 
             Assert.That(result.StateChange, Is.True);
             Assert.That(result.Score, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void TestMultipleMerge_LongRun()
+        {
+            int size = 4;
+
+            var sut = new GameStateHandler();
+            var gameState = new GameState(size);
+            gameState.Set(0, 0, 2);
+            gameState.Set(0, 1, 2);
+            gameState.Set(0, 2, 4);
+            gameState.Set(0, 3, 8);
+
+            gameState.Set(1, 0, 16);
+            gameState.Set(2, 0, 32);
+            gameState.Set(3, 0, 64);
+            var result = sut.MoveLeft(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(4));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(4));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(8));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(16));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(32));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(64));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(4));
+
+            result = sut.MoveLeft(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(8));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(8));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(16));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(32));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(64));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(8));
+
+            result = sut.MoveLeft(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(16));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(16));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(32));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(64));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(16));
+
+            result = sut.MoveUp(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(32));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(32));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(64));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(0));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(32));
+
+            result = sut.MoveUp(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(64));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(64));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(0));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(64));
+
+            result = sut.MoveUp(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(128));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(0));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(128));
+
+            result = sut.MoveUp(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(128));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(0));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(0));
+
+            Assert.That(result.StateChange, Is.False);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(0));
+
+            result = sut.MoveRight(gameState);
+
+            Assert.That(gameState.Get(0, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 1), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 2), Is.EqualTo(0));
+            Assert.That(gameState.Get(0, 3), Is.EqualTo(128));
+
+            Assert.That(gameState.Get(1, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(2, 0), Is.EqualTo(0));
+            Assert.That(gameState.Get(3, 0), Is.EqualTo(0));
+
+            Assert.That(result.StateChange, Is.True);
+            Assert.That(result.GameOver, Is.False);
+            Assert.That(result.Score, Is.EqualTo(0));
         }
 
         [Test]

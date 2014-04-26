@@ -1,4 +1,5 @@
-﻿using Sharp2048;
+﻿using log4net;
+using Sharp2048;
 using SharpNeat.Core;
 using SharpNeat.Phenomes;
 using System;
@@ -12,6 +13,7 @@ namespace SharpNeat.Domains
 {
     public class Sharp2048Evaluator : IPhenomeEvaluator<IBlackBox>
     {
+        private static readonly ILog __log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly Func<IGameContoller> _gameController;
         private long _evalCount;
         private const int _maxIter = 2000;
@@ -36,21 +38,24 @@ namespace SharpNeat.Domains
         {
             Interlocked.Increment(ref _evalCount);
             var fitness = 0d;
+            var altFitness = 0d;
             for (int i = 0; i<_runsPerEval; i++)
             {
-                fitness += _evaluateOne(phenome);
+                var res = _evaluateOne(phenome);
+                fitness += res.Item1;
+                altFitness += res.Item2;
+
             };
 
             fitness /= _runsPerEval;
-            return new FitnessInfo(fitness, fitness);
+            altFitness /= _runsPerEval;
+            return new FitnessInfo(fitness + altFitness, altFitness);
         }
 
-        public double _evaluateOne(IBlackBox phenome)
+        public Tuple<int, double> _evaluateOne(IBlackBox phenome)
         {
-            phenome.ResetState();
             var gameController = _gameController();
             gameController.Reset();
-            var fitness = 0;
             var noChange = 0;
             while (!gameController.IsFinished() && noChange < _maxNoChange)
             {
@@ -58,8 +63,9 @@ namespace SharpNeat.Domains
                 var n = state.GetLength(0);
                 for (int i = 0; i < n; i++)
                     for (int j = 0; j < n; j++)
-                        phenome.InputSignalArray[i * n + j] = state[i, j];
+                        phenome.InputSignalArray[i * n + j] = Math.Log(state[i, j], 2);
 
+                phenome.ResetState();
                 phenome.Activate();
 
                 var crMax = phenome.OutputSignalArray[0];
@@ -97,16 +103,20 @@ namespace SharpNeat.Domains
                         throw new Exception("Incorrect output");
                 }
 
-                if (gameController.MovedLastTurn())
-                {
-                    fitness++;
-                }
-                else
+                if (!gameController.MovedLastTurn())
                 {
                     noChange++;
                 }
             }
-            return gameController.Score;
+
+            var fitness = gameController.Score;
+            double altFitness = gameController.Score + gameController.HighestSeenBlock;
+            if (noChange < _maxNoChange)
+            {
+                altFitness *= 1.1d;
+            }
+
+            return Tuple.Create(fitness, altFitness); // alt fitness takes highest block into account and gives a small boost for getting into a final state
         }
 
         public void Reset()

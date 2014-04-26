@@ -14,19 +14,17 @@ namespace Sharp2048.Console
             var handler = new GameStateHandler();
             handler.AddRandomTile(initialState, null);
             handler.AddRandomTile(initialState, null);
-            var runner = new Runner(handler, initialState);
+            var runner = new Runner(new Sharp2048GameController(initialState, handler));
             runner.Run();
         }
     }
 
     public class Runner
     {
-        private IGameState _currentState;
-        private IGameStateHandler _handler;
-        public Runner(IGameStateHandler handler, IGameState initialState)
+        private IGameContoller _controller;
+        public Runner(IGameContoller handler)
         {
-            _handler = handler;
-            _currentState = initialState;
+            _controller = handler;
         }
 
         public void Run()
@@ -34,22 +32,22 @@ namespace Sharp2048.Console
             var lastLine = String.Empty;
             do
             {
-                System.Console.WriteLine(Convert(_currentState));
+                System.Console.WriteLine(Convert(_controller.GetState()));
 
                 lastLine = System.Console.ReadLine();
                 switch (lastLine.ToLower())
                 {
                     case "up":
-                        _handler.MoveUp(_currentState);
+                        _controller.Up();
                         break;
                     case "down":
-                        _handler.MoveDown(_currentState);
+                        _controller.Down();
                         break;
                     case "left":
-                        _handler.MoveLeft(_currentState);
+                        _controller.Left();
                         break;
                     case "right":
-                        _handler.MoveRight(_currentState);
+                        _controller.Right();
                         break;
                     default:
                         System.Console.WriteLine("that isn't a valid direction (up down left right)");
@@ -58,17 +56,16 @@ namespace Sharp2048.Console
             } while (lastLine != "quit");
         }
 
-        public string Convert(IGameState state)
+        public string Convert(int[,] state)
         {
             var builder = new StringBuilder();
 
-            for (int i = 0; i < state.Size; i++)
+            for (int i = 0; i < state.GetLength(0); i++)
             {
-                var row = state.GetRow(i);
                 builder.Append("[");
-                foreach (var ri in row.Values)
+                for (int j = 0; j < state.GetLength(1); j++)
                 {
-                    builder.Append(ri + ", ");
+                    builder.Append(state[i,j] + ", ");
                 }
                 builder.AppendLine("]");
             }

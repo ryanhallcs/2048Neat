@@ -13,23 +13,35 @@ namespace Sharp2048
         void Set(int row, int col, int val);
         int Get(int row, int col);
 
-        GameArray GetRow(int rowIdx);
-        GameArray GetCol(int colIdx);
-        void Set(GameArray array, int idx);
+        IGameArray GetRow(int rowIdx);
+        IGameArray GetCol(int colIdx);
 
         bool IsGameOver();
 
         int[,] GetInternalState();
+
+        bool[,] GetZeroState();
     }
     public class GameState : IGameState
     {
         private int[,] _internalArray;
         private int _size;
 
+        private IGameArray[] _rows;
+        private IGameArray[] _cols;
+
         public GameState(int size)
         {
             _size = size;
             Reset();
+            
+            _rows = new IGameArray[size];
+            _cols = new IGameArray[size];
+            for (int i=0; i<_size; i++)
+            {
+                _rows[i] = new GameArray(this, i, GameArrayType.Row);
+                _cols[i] = new GameArray(this, i, GameArrayType.Column);
+            }
         }
 
         public void Reset()
@@ -52,47 +64,15 @@ namespace Sharp2048
             get { return _size; }
         }
 
-        public GameArray GetRow(int rowIdx)
+        public IGameArray GetRow(int rowIdx)
         {
-            var result = new GameArray();
-            result.Values = new int[_size];
-            for (int i = 0; i < _size; i++)
-                result.Values[i] = _internalArray[rowIdx, i];
-            result.ArrayType = GameArrayType.Row;
-            return result;
+            return _rows[rowIdx];
         }
 
-        public GameArray GetCol(int colIdx)
+        public IGameArray GetCol(int colIdx)
         {
-            var result = new GameArray();
-            result.Values = new int[_size];
-            for (int i = 0; i < _size; i++)
-                result.Values[i] = _internalArray[i, colIdx];
-            result.ArrayType = GameArrayType.Column;
-            return result;
+            return _cols[colIdx];
         }
-
-        public void Set(GameArray array, int idx)
-        {
-            switch (array.ArrayType)
-            {
-                case GameArrayType.Column:
-                    for (int i = 0; i < _size; i++)
-                    {
-                        _internalArray[i, idx] = array.Values[i];
-                    }
-                    break;
-                case GameArrayType.Row:
-                    for (int i = 0; i < _size; i++)
-                    {
-                        _internalArray[idx, i] = array.Values[i];
-                    }
-                    break;
-                default:
-                    throw new ArgumentException("Unhandled array type" + array.ArrayType, "array");
-            }
-        }
-
 
         public bool IsGameOver()
         {
@@ -106,17 +86,78 @@ namespace Sharp2048
             return true;
         }
 
-
         public int[,] GetInternalState()
         {
             return _internalArray;
         }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            for (int i = 0; i < _size; i++)
+                builder.AppendLine(GetRow(i).ToString());
+            return builder.ToString();
+        }
+
+        public bool[,] GetZeroState()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public class GameArray
+    public interface IGameArray
     {
-        public GameArrayType ArrayType { get; set; }
-        public int[] Values { get; set; }
+        int Size { get; }
+        GameArrayType ArrayType { get; }
+
+        int GetVal(int idx);
+
+        void SetVal(int idx, int val);
+    }
+
+    public class GameArray : IGameArray
+    {
+        private IGameState _stateRef;
+        private int _idx;
+        private GameArrayType _arrayType;
+
+        public GameArray(IGameState state, int idx, GameArrayType arrayType)
+        {
+            _stateRef = state;
+            _idx = idx;
+            _arrayType = arrayType;
+        }
+
+        public int Size { get { return _stateRef.Size; } }
+
+        public GameArrayType ArrayType { get { return _arrayType; } }
+
+        public override string ToString()
+        {
+            return String.Format("[{0}, {1}, {2}, {3}]", GetVal(0), GetVal(1), GetVal(2), GetVal(3));
+        }
+
+        public int GetVal(int idx)
+        {
+            if (ArrayType == GameArrayType.Row)
+            {
+                return _stateRef.Get(_idx, idx);
+            }
+
+            return _stateRef.Get(idx, _idx);
+        }
+
+        public void SetVal(int idx, int val)
+        {
+            if (ArrayType == GameArrayType.Row)
+            {
+                _stateRef.Set(_idx, idx, val);
+            }
+            else
+            {
+                _stateRef.Set(idx, _idx, val);
+            }
+        }
     }
 
     public enum GameArrayType

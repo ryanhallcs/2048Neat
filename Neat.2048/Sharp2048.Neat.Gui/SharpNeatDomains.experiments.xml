@@ -6,13 +6,13 @@
     <AssemblyPath>SharpNeatDomains.dll</AssemblyPath>
     <ClassName>SharpNeat.Domains.Sharp2048Experiment</ClassName>
     <Config>
-      <PopulationSize>300</PopulationSize>
-      <SpecieCount>25</SpecieCount>
+      <PopulationSize>500</PopulationSize>
+      <SpecieCount>40</SpecieCount>
       <Activation>
         <Scheme>FixedIters</Scheme>
         <Iters>1</Iters>
       </Activation>
-      <MaxDegreeOfParallelism>3</MaxDegreeOfParallelism>
+      <MaxDegreeOfParallelism>6</MaxDegreeOfParallelism>
       <ComplexityRegulationStrategy>Relative</ComplexityRegulationStrategy>
       <ComplexityThreshold>10</ComplexityThreshold>
       <Variant>2048</Variant>
@@ -448,6 +448,7 @@ The problem domain view allows the performance of the best genome to be observed
       <ComplexityThreshold>10</ComplexityThreshold>      
       <LengthCppnInput>true</LengthCppnInput>
       <Resolution>11</Resolution>
+      <MaxDegreeOfParallelism>5</MaxDegreeOfParallelism>
       <Description>Boxes Visual Discrimination Task, as described in:
 'A Hypercube-Based Encoding for Evolving Large-Scale Neural Networks', Kenneth O. Stanley, David B. D'Ambrosio, and Jason Gauci (2009)
 http://eplex.cs.ucf.edu/publications/2009/stanley.alife09.html
