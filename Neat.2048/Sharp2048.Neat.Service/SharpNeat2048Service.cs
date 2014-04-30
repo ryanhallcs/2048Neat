@@ -12,7 +12,14 @@ using SharpNeat.Phenomes;
 
 namespace Sharp2048.Neat.Service
 {
-    public class SharpNeat2048Service
+    public interface ISharpNeat2048Service
+    {
+        Genome GetGenome(Guid genomeId);
+        Genome SaveNewGenome(string description, string loadedBy, string rawGenome);
+        IBlackBox GetDecodedGenome(Guid genomeId);
+    }
+
+    public class SharpNeat2048Service : ISharpNeat2048Service
     {
         private readonly Sharp2048DataModelContainer _neatDb;
         private readonly IGenomeDecoder<NeatGenome, IBlackBox> _decoder;
@@ -27,14 +34,14 @@ namespace Sharp2048.Neat.Service
             return _neatDb.Genomes.SingleOrDefault(a => a.GenomeIdentifier == genomeId);
         }
 
-        public Genome SaveNewGenome(Guid id, string description, string rawGenome)
+        public Genome SaveNewGenome(string description, string loadedBy, string rawGenome)
         {
             try
             {
                 using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
                 using (var xml = XmlReader.Create(stream))
                 {
-                    var neatGenome = NeatGenomeXmlIO.ReadGenome(xml, false);
+                    NeatGenomeXmlIO.ReadGenome(xml, false);
                 }
             }
             catch (Exception)
@@ -44,12 +51,12 @@ namespace Sharp2048.Neat.Service
 
             var newGenome = new Genome
                 {
-                    GenomeIdentifier = id,
+                    GenomeIdentifier = Guid.NewGuid(),
                     Description = description,
                     GenomeXml = rawGenome
                 };
             _neatDb.Genomes.Add(newGenome);
-            return GetGenome(id);
+            return GetGenome(newGenome.GenomeIdentifier);
         }
 
         public IBlackBox GetDecodedGenome(Guid genomeId)

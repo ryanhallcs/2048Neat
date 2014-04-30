@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Newtonsoft.Json.Linq;
 using Sharp2048.Neat.Service;
+using Sharp2048.Web.Models;
 
 namespace Sharp2048.Web.Controllers
 {
     public class Sharp2048Controller : Controller
     {
-        private readonly SharpNeat2048Service _neat2048Service;
-        public Sharp2048Controller(SharpNeat2048Service neat2048Service)
+        private readonly ISharpNeat2048Service _neat2048Service;
+        public Sharp2048Controller(ISharpNeat2048Service neat2048Service)
         {
             _neat2048Service = neat2048Service;
         }
@@ -18,13 +20,26 @@ namespace Sharp2048.Web.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            throw new NotImplementedException();
+            return View();
         }
 
         [HttpGet]
-        public ActionResult Index(Guid id)
+        public ActionResult LoadGenome()
         {
-            throw new NotImplementedException();
+            return View(new LoadGenomeViewModel());
+        }
+
+        [HttpPost]
+        public ActionResult LoadGenome(LoadGenomeViewModel model)
+        {
+            var savedGenome = _neat2048Service.SaveNewGenome(model.Description, model.LoadedBy, model.GenomeXml);
+
+            if (savedGenome == null)
+            {
+                ModelState.AddModelError("GenomeXml", "Could not parse xml");
+            }
+
+            return View(model);
         }
     }
 }

@@ -1,0 +1,18 @@
+﻿@model Sharp2048.Web.Models.LoadGenomeViewModel
+
+@{
+    Layout = null;
+}
+
+<h1>Load your genome here</h1>
+
+@Html.LabelFor(a => a.Description)
+@Html.TextBoxFor(a => a.Description)
+
+@Html.LabelFor(a => a.LoadedBy)
+@Html.TextBoxFor(a => a.LoadedBy)
+
+@Html.LabelFor(a => a.GenomeXml)
+@Html.TextAreaFor(a => a.GenomeXml)
+
+<button type="submit">Load Genome</button>
