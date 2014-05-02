@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Sharp2048.Data;
+using Sharp2048.Neat.Service.Models;
 using SharpNeat.Core;
 using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
@@ -17,6 +18,7 @@ namespace Sharp2048.Neat.Service
         Genome GetGenome(Guid genomeId);
         Genome SaveNewGenome(string description, string loadedBy, string rawGenome);
         IBlackBox GetDecodedGenome(Guid genomeId);
+        DirectionEnum ProcessMove(int[,] state, Guid genomeId);
     }
 
     public class SharpNeat2048Service : ISharpNeat2048Service
@@ -121,6 +123,35 @@ namespace Sharp2048.Neat.Service
             }
 
             return _decoder.Decode(neatGenome);
+        }
+
+        public DirectionEnum ProcessMove(int[,] state, Guid genomeId)
+        {
+            var phenome = GetDecodedGenome(genomeId);
+            phenome.ResetState();
+            var size = state.GetLength(0);
+            for (int i = 0; i < size; i++)
+                for (int j = 0; j < size; j++)
+                    phenome.InputSignalArray[i*size + j] = state[i, j];
+
+            var crMax = phenome.OutputSignalArray[0];
+            var result = DirectionEnum.Left;
+            if (phenome.OutputSignalArray[1] > crMax)
+            {
+                result = DirectionEnum.Right;
+                crMax = phenome.OutputSignalArray[1];
+            }
+            if (phenome.OutputSignalArray[2] > crMax)
+            {
+                result = DirectionEnum.Down;
+                crMax = phenome.OutputSignalArray[2];
+            }
+            if (phenome.OutputSignalArray[3] > crMax)
+            {
+                result = DirectionEnum.Up;
+            }
+
+            return result;
         }
     }
 }

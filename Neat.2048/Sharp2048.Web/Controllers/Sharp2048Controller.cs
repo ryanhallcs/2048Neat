@@ -58,5 +58,19 @@ namespace Sharp2048.Web.Controllers
         {
             return View();
         }
+
+        public ActionResult ProcessNextState(string state, Guid genomeId)
+        {
+            var stateJson = JObject.Parse(state);
+            var serviceState = _convertJsonState(stateJson);
+            var nextMove = _neat2048Service.ProcessMove(serviceState, genomeId);
+
+            return new JsonResult {Data = new { result = nextMove.ToString()}};
+        }
+
+        private int[,] _convertJsonState(JObject jsonState)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

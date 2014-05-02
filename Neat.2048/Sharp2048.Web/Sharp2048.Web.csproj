@@ -201,6 +201,7 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Sharp2048\Index.cshtml" />
     <Content Include="Views\Sharp2048\LoadGenome.cshtml" />
+    <Content Include="Views\Sharp2048\Play.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
