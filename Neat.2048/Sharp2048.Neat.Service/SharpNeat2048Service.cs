@@ -36,27 +36,77 @@ namespace Sharp2048.Neat.Service
 
         public Genome SaveNewGenome(string description, string loadedBy, string rawGenome)
         {
+            var genome = _trySaveSingle(rawGenome) 
+                ?? _trySaveSingleList(rawGenome)
+                ?? _trySaveSingleFullList(rawGenome);
+
+            if (genome == null)
+            {
+                return null;
+            }
+
+            var stringBuilder = new StringBuilder();
+            using (var writer = XmlWriter.Create(stringBuilder))
+            {
+                NeatGenomeXmlIO.Write(writer, genome, false);
+            }
+
+            var newGenome = new Genome
+            {
+                GenomeIdentifier = Guid.NewGuid(),
+                Description = description,
+                GenomeXml = stringBuilder.ToString()
+            };
+            _neatDb.Genomes.Add(newGenome);
+            return GetGenome(newGenome.GenomeIdentifier);
+        }
+
+        private NeatGenome _trySaveSingle(string rawGenome)
+        {
             try
             {
                 using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
                 using (var xml = XmlReader.Create(stream))
                 {
-                    NeatGenomeXmlIO.ReadGenome(xml, false);
+                    return NeatGenomeXmlIO.ReadGenome(xml, false);
                 }
             }
             catch (Exception)
             {
                 return null;
             }
+        }
 
-            var newGenome = new Genome
+        private NeatGenome _trySaveSingleList(string rawGenome)
+        {
+            try
+            {
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
+                using (var xml = XmlReader.Create(stream))
                 {
-                    GenomeIdentifier = Guid.NewGuid(),
-                    Description = description,
-                    GenomeXml = rawGenome
-                };
-            _neatDb.Genomes.Add(newGenome);
-            return GetGenome(newGenome.GenomeIdentifier);
+                    return NeatGenomeXmlIO.ReadSimpleGenomeList(xml, false).FirstOrDefault();
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private NeatGenome _trySaveSingleFullList(string rawGenome)
+        {
+            try
+            {
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
+                using (var xml = XmlReader.Create(stream))
+                {
+                    return NeatGenomeXmlIO.ReadCompleteGenomeList(xml, false, new NeatGenomeFactory(16, 4)).FirstOrDefault();
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public IBlackBox GetDecodedGenome(Guid genomeId)

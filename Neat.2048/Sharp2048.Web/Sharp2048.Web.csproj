@@ -146,14 +146,22 @@
     <Compile Include="WindsorControllerFactory.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\bootstrap.css" />
-    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\fonts\clear-sans.css" />
+    <Content Include="Content\fonts\ClearSans-Bold-webfont.svg" />
+    <Content Include="Content\fonts\ClearSans-Light-webfont.svg" />
+    <Content Include="Content\fonts\ClearSans-Regular-webfont.svg" />
+    <Content Include="Content\main.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
-    <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Content\fonts\ClearSans-Bold-webfont.eot" />
+    <Content Include="Content\fonts\ClearSans-Bold-webfont.woff" />
+    <Content Include="Content\fonts\ClearSans-Light-webfont.eot" />
+    <Content Include="Content\fonts\ClearSans-Light-webfont.woff" />
+    <Content Include="Content\fonts\ClearSans-Regular-webfont.eot" />
+    <Content Include="Content\fonts\ClearSans-Regular-webfont.woff" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using Newtonsoft.Json.Linq;
 using Sharp2048.Neat.Service;
 using Sharp2048.Web.Models;
@@ -32,14 +33,30 @@ namespace Sharp2048.Web.Controllers
         [HttpPost]
         public ActionResult LoadGenome(LoadGenomeViewModel model)
         {
+            model = model ?? new LoadGenomeViewModel();
+
             var savedGenome = _neat2048Service.SaveNewGenome(model.Description, model.LoadedBy, model.GenomeXml);
 
             if (savedGenome == null)
             {
-                ModelState.AddModelError("GenomeXml", "Could not parse xml");
+                ModelState.AddModelError("GenomeXml", "Could not parse xml into a valid NeatGenome");
+            }
+            if (String.IsNullOrEmpty(model.LoadedBy))
+            {
+                ModelState.AddModelError("LoadedBy", "Loaded By cannot be null");
+            }
+
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction("Play", new {genomeId = savedGenome.GenomeIdentifier});
             }
 
             return View(model);
+        }
+
+        public ActionResult Play(Guid genomeId)
+        {
+            return View();
         }
     }
 }

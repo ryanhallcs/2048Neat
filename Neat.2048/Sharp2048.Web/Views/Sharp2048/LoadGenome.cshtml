@@ -1,18 +1,32 @@
 ﻿@model Sharp2048.Web.Models.LoadGenomeViewModel
 
 @{
-    Layout = null;
+    Layout = "../Shared/_Layout.cshtml";
 }
 
-<h1>Load your genome here</h1>
+<div class="heading">
+    <h1 class="title">Load Your Genome</h1>
+</div>
 
-@Html.LabelFor(a => a.Description)
-@Html.TextBoxFor(a => a.Description)
+<div class="above-game">
+    @using(Html.BeginForm())
+    {
+        <div>
+            <p>@Html.LabelFor(a => a.Description)</p>
+            <p> @Html.TextBoxFor(a => a.Description)</p>
+            <p>@Html.ValidationMessageFor(a => a.Description)</p>
+        </div>
+        <div>
+            <p>@Html.LabelFor(a => a.LoadedBy)</p>
+            <p>@Html.TextBoxFor(a => a.LoadedBy)</p>
+            <p>@Html.ValidationMessageFor(a => a.LoadedBy)</p>
+        </div>
+        <div>
+            <p>@Html.LabelFor(a => a.GenomeXml)</p>
+            <p> @Html.TextAreaFor(a => a.GenomeXml)</p>
+            <p>@Html.ValidationMessageFor(a => a.GenomeXml)</p>
+        </div>
+        <input type="submit" class="restart-button" value="Load Genome" />
+    }
+</div>
 
-@Html.LabelFor(a => a.LoadedBy)
-@Html.TextBoxFor(a => a.LoadedBy)
-
-@Html.LabelFor(a => a.GenomeXml)
-@Html.TextAreaFor(a => a.GenomeXml)
-
-<button type="submit">Load Genome</button>
