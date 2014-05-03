@@ -1,8 +1,108 @@
-﻿@model Guid
+﻿@model Guid?
 
 @{
     ViewBag.Title = "2048ai";
     Layout = "../Shared/_Layout.cshtml";
 }
+<div class="heading">
+      <h1 class="title">2048ai</h1>
+      <div class="scores-container">
+        <div class="score-container">0</div>
+        <div class="best-container">0</div>
+      </div>
+    </div>
 
-<h2>2048ai</h2>
+    <div class="above-game">
+      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
+      <a class="restart-button">New Game</a>
+    </div>
+
+
+    <div class="above-game">
+      <a class="next-move-button" onclick="nextMove()">Next Move</a>
+    </div>
+
+<div class="game-container">
+    <div class="game-message">
+        <p></p>
+        <div class="lower">
+            <a class="keep-playing-button">Keep going</a>
+            <a class="retry-button">Try again</a>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+        </div>
+    </div>
+
+    <div class="tile-container">
+
+    </div>
+</div>
+
+
+<p class="game-explanation">
+      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+    </p>
+    <hr>
+    <p>
+    <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
+    </p>
+    <hr>
+    <p>
+    Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
+    </p>
+  
+
+  <script src="../../Scripts/bind_polyfill.js"></script>
+  <script src="../../Scripts/classlist_polyfill.js"></script>
+  <script src="../../Scripts/animframe_polyfill.js"></script>
+  <script src="../../Scripts/keyboard_input_manager.js"></script>
+  <script src="../../Scripts/html_actuator.js"></script>
+  <script src="../../Scripts/grid.js"></script>
+  <script src="../../Scripts/tile.js"></script>
+  <script src="../../Scripts/local_storage_manager.js"></script>
+  <script src="../../Scripts/game_manager.js"></script>
+  <script src="../../Scripts/application.js"></script>
+
+    <script>
+        function nextMove() {
+            var storage = new LocalStorageManager();
+            var grid = storage.getGameState().grid;
+            var jsonState = JSON.stringify(grid);
+            var actionLink = '@(Url.Action("ProcessNextState"))?' + 'state=' + jsonState + '&genomeId=' + @(Model.ToString()) + '';
+            $.ajax({
+                url: actionLink,
+                type: "post",
+                success: function (data) {
+                    $(".post-events").append(data);
+                },
+                error: function () {
+                    $(".post-events").append('error');
+                }
+            });
+        }
+    </script>

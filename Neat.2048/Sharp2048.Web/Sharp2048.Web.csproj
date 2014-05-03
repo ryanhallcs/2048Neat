@@ -140,6 +140,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\GridViewModel.cs" />
     <Compile Include="Models\LoadGenomeViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sharp2048WindsorInstaller.cs" />
@@ -154,6 +155,9 @@
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\animframe_polyfill.js" />
+    <Content Include="Scripts\application.js" />
+    <Content Include="Scripts\bind_polyfill.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Content\fonts\ClearSans-Bold-webfont.eot" />
@@ -163,6 +167,10 @@
     <Content Include="Content\fonts\ClearSans-Regular-webfont.eot" />
     <Content Include="Content\fonts\ClearSans-Regular-webfont.woff" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\classlist_polyfill.js" />
+    <Content Include="Scripts\game_manager.js" />
+    <Content Include="Scripts\grid.js" />
+    <Content Include="Scripts\html_actuator.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -170,9 +178,12 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\keyboard_input_manager.js" />
+    <Content Include="Scripts\local_storage_manager.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\tile.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

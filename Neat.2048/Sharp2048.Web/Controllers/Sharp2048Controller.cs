@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sharp2048.Neat.Service;
 using Sharp2048.Web.Models;
@@ -54,22 +55,26 @@ namespace Sharp2048.Web.Controllers
             return View(model);
         }
 
-        public ActionResult Play(Guid genomeId)
+        public ActionResult Play(Guid? genomeId)
         {
-            return View();
+            return View(genomeId);
         }
 
-        public ActionResult ProcessNextState(string state, Guid genomeId)
+        public ActionResult ProcessNextState(string state, Guid? genomeId)
         {
-            var stateJson = JObject.Parse(state);
-            var serviceState = _convertJsonState(stateJson);
-            var nextMove = _neat2048Service.ProcessMove(serviceState, genomeId);
+            var serviceState = _convertJsonState(state);
+            if (!genomeId.HasValue || serviceState == null)
+            {
+                return new EmptyResult();
+            }
+            var nextMove = _neat2048Service.ProcessMove(serviceState, genomeId.Value);
 
             return new JsonResult {Data = new { result = nextMove.ToString()}};
         }
 
-        private int[,] _convertJsonState(JObject jsonState)
+        private int[,] _convertJsonState(string jsonState)
         {
+            var gridModel = JsonConvert.DeserializeObject<GridViewModel>(jsonState);
             throw new NotImplementedException();
         }
     }
