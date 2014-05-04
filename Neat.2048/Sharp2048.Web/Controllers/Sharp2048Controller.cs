@@ -74,8 +74,21 @@ namespace Sharp2048.Web.Controllers
 
         private int[,] _convertJsonState(string jsonState)
         {
-            var gridModel = JsonConvert.DeserializeObject<GridViewModel>(jsonState);
-            throw new NotImplementedException();
+            GridViewModel gridModel = null;
+            try
+            {
+                gridModel = JsonConvert.DeserializeObject<GridViewModel>(jsonState);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            var result = new int[gridModel.Size,gridModel.Size];
+            for (int i = 0; i < gridModel.Size; i++)
+                for (int j = 0; j < gridModel.Size; j++)
+                    if (gridModel.Cells[i, j] != null)
+                        result[i, j] = gridModel.Cells[i, j].Value;
+            return result;
         }
     }
 }

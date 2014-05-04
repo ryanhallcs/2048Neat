@@ -9,17 +9,14 @@ namespace Sharp2048.Web.Models
     {
         public int Size { get; set; }
 
-        public CellViewModel[] Cells { get; set; }
-    }
-
-    public class CellViewModel
-    {
-        public RowViewModel[] Rows { get; set; }
+        public RowViewModel[,] Cells { get; set; }
     }
 
     public class RowViewModel
     {
-        public PositionViewModel[] Position { get; set; }
+        public PositionViewModel Position { get; set; }
+
+        public int Value { get; set; }
     }
 
     public class PositionViewModel
