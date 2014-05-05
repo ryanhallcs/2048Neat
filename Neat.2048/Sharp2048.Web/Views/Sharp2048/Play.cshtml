@@ -93,7 +93,7 @@
             var storage = new LocalStorageManager();
             var grid = storage.getGameState().grid;
             var jsonState = JSON.stringify(grid);
-            var actionLink = '@(Url.Action("ProcessNextState"))?' + 'state=' + jsonState + '&genomeId=' + @(Model.ToString()) + '';
+            var actionLink = '@(Url.Action("ProcessNextState"))?' + 'state=' + jsonState + '&genomeId=@(Model.ToString())';
             $.ajax({
                 url: actionLink,
                 type: "post",

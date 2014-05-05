@@ -87,7 +87,7 @@ namespace Sharp2048.Web.Controllers
             for (int i = 0; i < gridModel.Size; i++)
                 for (int j = 0; j < gridModel.Size; j++)
                     if (gridModel.Cells[i, j] != null)
-                        result[i, j] = gridModel.Cells[i, j].Value;
+                        result[j, i] = gridModel.Cells[i, j].Value; // We have to transpose it because of how the model is stored
             return result;
         }
     }

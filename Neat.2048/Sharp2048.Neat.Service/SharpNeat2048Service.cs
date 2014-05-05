@@ -60,6 +60,7 @@ namespace Sharp2048.Neat.Service
                 GenomeXml = stringBuilder.ToString()
             };
             _neatDb.Genomes.Add(newGenome);
+            _neatDb.SaveChanges();
             return GetGenome(newGenome.GenomeIdentifier);
         }
 
@@ -116,10 +117,10 @@ namespace Sharp2048.Neat.Service
             var genome = GetGenome(genomeId);
 
             NeatGenome neatGenome = null;
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(genome.GenomeXml)))
+            using (var stream = new MemoryStream(Encoding.Unicode.GetBytes(genome.GenomeXml)))
             using (var xml = XmlReader.Create(stream))
             {
-                neatGenome = NeatGenomeXmlIO.ReadGenome(xml, false);
+                neatGenome = NeatGenomeXmlIO.ReadGenome(xml, true);
             }
 
             return _decoder.Decode(neatGenome);
