@@ -25,10 +25,12 @@ namespace Sharp2048.Neat.Service
     {
         private readonly Sharp2048DataModelContainer _neatDb;
         private readonly IGenomeDecoder<NeatGenome, IBlackBox> _decoder;
-        public SharpNeat2048Service(Sharp2048DataModelContainer neatDb, IGenomeDecoder<NeatGenome,IBlackBox> decoder)
+        private readonly IGenomeGenerator _generator;
+        public SharpNeat2048Service(Sharp2048DataModelContainer neatDb, IGenomeDecoder<NeatGenome, IBlackBox> decoder, IGenomeGenerator generator)
         {
             _neatDb = neatDb;
             _decoder = decoder;
+            _generator = generator;
         }
 
         public Genome GetGenome(Guid genomeId)
@@ -68,11 +70,7 @@ namespace Sharp2048.Neat.Service
         {
             try
             {
-                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
-                using (var xml = XmlReader.Create(stream))
-                {
-                    return NeatGenomeXmlIO.ReadGenome(xml, false);
-                }
+                return _generator.GenerateFromXmlString(rawGenome);
             }
             catch (Exception)
             {
@@ -84,11 +82,7 @@ namespace Sharp2048.Neat.Service
         {
             try
             {
-                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
-                using (var xml = XmlReader.Create(stream))
-                {
-                    return NeatGenomeXmlIO.ReadSimpleGenomeList(xml, false).FirstOrDefault();
-                }
+                return _generator.GenerateSimpleListFromXmlString(rawGenome).FirstOrDefault();
             }
             catch (Exception)
             {
@@ -100,11 +94,7 @@ namespace Sharp2048.Neat.Service
         {
             try
             {
-                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawGenome)))
-                using (var xml = XmlReader.Create(stream))
-                {
-                    return NeatGenomeXmlIO.ReadCompleteGenomeList(xml, false, new NeatGenomeFactory(16, 4)).FirstOrDefault();
-                }
+                return _generator.GenerateCompleteListFromXmlString(rawGenome).FirstOrDefault();
             }
             catch (Exception)
             {
@@ -116,12 +106,7 @@ namespace Sharp2048.Neat.Service
         {
             var genome = GetGenome(genomeId);
 
-            NeatGenome neatGenome = null;
-            using (var stream = new MemoryStream(Encoding.Unicode.GetBytes(genome.GenomeXml)))
-            using (var xml = XmlReader.Create(stream))
-            {
-                neatGenome = NeatGenomeXmlIO.ReadGenome(xml, true);
-            }
+            var neatGenome = _generator.GenerateFromXmlString(genome.GenomeXml);
 
             return _decoder.Decode(neatGenome);
         }

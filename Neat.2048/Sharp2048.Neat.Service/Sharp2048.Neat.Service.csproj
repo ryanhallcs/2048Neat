@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IGenomeGenerator.cs" />
     <Compile Include="Models\Enums.cs" />
     <Compile Include="Models\Sharp2046GenomeModel.cs" />
     <Compile Include="SharpNeat2048Service.cs" />

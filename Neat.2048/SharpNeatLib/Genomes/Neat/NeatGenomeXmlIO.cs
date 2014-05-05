@@ -136,11 +136,11 @@ namespace SharpNeat.Genomes.Neat
         /// <param name="xmlNode">The XmlNode to read from. This can be an XmlDocument or XmlElement.</param>
         /// <param name="nodeFnIds">Indicates if node activation function IDs should be read. They are required
         /// for HyperNEAT genomes but not for NEAT</param>
-        public static NeatGenome LoadGenome(XmlNode xmlNode, bool nodeFnIds)
+        public static NeatGenome LoadGenome(XmlNode xmlNode, bool nodeFnIds, NeatGenomeFactory genomeFactory)
         {
             using(XmlNodeReader xr = new XmlNodeReader(xmlNode))
             {
-                return ReadGenome(xr, nodeFnIds);
+                return ReadGenome(xr, nodeFnIds, genomeFactory);
             }
         }
 
@@ -278,7 +278,7 @@ namespace SharpNeat.Genomes.Neat
 
         #region Public Static Methods [Read from XML]
 
-        public static List<NeatGenome> ReadSimpleGenomeList(XmlReader xr, bool nodeFnIds)
+        public static List<NeatGenome> ReadSimpleGenomeList(XmlReader xr, bool nodeFnIds, NeatGenomeFactory genomeFactory)
         {
             // Find <Root>.
             XmlIoUtils.MoveToElement(xr, false, __ElemRoot);
@@ -302,7 +302,7 @@ namespace SharpNeat.Genomes.Neat
                 // Read Network elements.
                 do
                 {
-                    NeatGenome genome = ReadGenome(xrSubtree, nodeFnIds);
+                    NeatGenome genome = ReadGenome(xrSubtree, nodeFnIds, genomeFactory);
                     genomeList.Add(genome);
                 }
                 while (xrSubtree.ReadToNextSibling(__ElemNetwork));
@@ -343,7 +343,7 @@ namespace SharpNeat.Genomes.Neat
                 // Read Network elements.
                 do
                 {
-                    NeatGenome genome = ReadGenome(xrSubtree, nodeFnIds);
+                    NeatGenome genome = ReadGenome(xrSubtree, nodeFnIds, genomeFactory);
                     genomeList.Add(genome);
                 } 
                 while(xrSubtree.ReadToNextSibling(__ElemNetwork));
@@ -419,7 +419,7 @@ namespace SharpNeat.Genomes.Neat
         /// <param name="xr">The XmlReader to read from.</param>
         /// <param name="nodeFnIds">Indicates if node activation function IDs should be read. They are required
         /// for HyperNEAT genomes but not for NEAT</param>
-        public static NeatGenome ReadGenome(XmlReader xr, bool nodeFnIds)
+        public static NeatGenome ReadGenome(XmlReader xr, bool nodeFnIds, NeatGenomeFactory genomeFactory)
         {
             // Find <Network>.
             XmlIoUtils.MoveToElement(xr, false, __ElemNetwork);
@@ -442,8 +442,8 @@ namespace SharpNeat.Genomes.Neat
             // Create a reader over the <Nodes> sub-tree.
             int inputNodeCount = 0;
             int outputNodeCount = 0;
-            NeuronGeneList nGeneList = new NeuronGeneList();
-            using(XmlReader xrSubtree = xr.ReadSubtree())
+            var nGeneList = new NeuronGeneList();
+            using(var xrSubtree = xr.ReadSubtree())
             {
                 // Re-scan for the root <Nodes> element.
                 XmlIoUtils.MoveToElement(xrSubtree, false);
@@ -454,7 +454,7 @@ namespace SharpNeat.Genomes.Neat
                 // Read node elements.
                 do
                 {
-                    NodeType neuronType = NetworkXmlIO.ReadAttributeAsNodeType(xrSubtree, __AttrType);
+                    var neuronType = NetworkXmlIO.ReadAttributeAsNodeType(xrSubtree, __AttrType);
                     uint id = XmlIoUtils.ReadAttributeAsUInt(xrSubtree, __AttrId);
                     int functionId = 0;
                     double[] auxState = null;
@@ -466,7 +466,7 @@ namespace SharpNeat.Genomes.Neat
                         auxState = XmlIoUtils.ReadAttributeAsDoubleArray(xrSubtree, __AttrAuxState);
                     }
 
-                    NeuronGene nGene = new NeuronGene(id, neuronType, functionId, auxState);
+                    var nGene = new NeuronGene(id, neuronType, functionId, auxState);
                     nGeneList.Add(nGene);
 
                     // Track the number of input and output nodes.
@@ -487,7 +487,7 @@ namespace SharpNeat.Genomes.Neat
             XmlIoUtils.MoveToElement(xr, false, __ElemConnections);
 
             // Create a reader over the <Connections> sub-tree.
-            ConnectionGeneList cGeneList = new ConnectionGeneList();
+            var cGeneList = new ConnectionGeneList();
             using(XmlReader xrSubtree = xr.ReadSubtree())
             {
                 // Re-scan for the root <Connections> element.
@@ -504,7 +504,7 @@ namespace SharpNeat.Genomes.Neat
                         uint srcId = XmlIoUtils.ReadAttributeAsUInt(xrSubtree, __AttrSourceId);
                         uint tgtId = XmlIoUtils.ReadAttributeAsUInt(xrSubtree, __AttrTargetId);
                         double weight = XmlIoUtils.ReadAttributeAsDouble(xrSubtree, __AttrWeight);
-                        ConnectionGene cGene = new ConnectionGene(id, srcId, tgtId, weight);
+                        var cGene = new ConnectionGene(id, srcId, tgtId, weight);
                         cGeneList.Add(cGene);
                     } 
                     while(xrSubtree.ReadToNextSibling(__ElemConnection));
@@ -521,7 +521,7 @@ namespace SharpNeat.Genomes.Neat
             while(xr.Read());
 
             // Construct and return loaded NeatGenome.
-            return new NeatGenome(null, genomeId, birthGen, nGeneList, cGeneList, inputNodeCount, outputNodeCount, true);
+            return new NeatGenome(genomeFactory, genomeId, birthGen, nGeneList, cGeneList, inputNodeCount, outputNodeCount, true);
         }
 
         #endregion
