@@ -5,7 +5,8 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="075becfe31b84398bb35285c79e1a142" Name="Diagram1" >
-        <EntityTypeShape EntityType="Sharp2048DataModel.Genome" Width="1.5" PointX="5.5972650002675435" PointY="29.764741300495686" />
+        <EntityTypeShape EntityType="Sharp2048DataModel.Genome" Width="1.5" PointX="5.125" PointY="1.75" />
+        <EntityTypeShape EntityType="Sharp2048DataModel.ActivationFunction" Width="1.5" PointX="10.17085688848554" PointY="25.641742897053131" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

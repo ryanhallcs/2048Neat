@@ -26,5 +26,6 @@ namespace Sharp2048.Data
         }
     
         public DbSet<Genome> Genomes { get; set; }
+        public DbSet<ActivationFunction> ActivationFunctions { get; set; }
     }
 }

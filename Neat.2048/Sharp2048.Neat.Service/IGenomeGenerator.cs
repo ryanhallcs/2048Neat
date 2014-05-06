@@ -30,10 +30,10 @@ namespace Sharp2048.Neat.Service
         public NeatGenome GenerateFromXmlString(string genomeXml)
         {
             NeatGenome neatGenome = null;
-            using (var stream = new MemoryStream(Encoding.Unicode.GetBytes(genomeXml)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(genomeXml)))
             using (var xml = XmlReader.Create(stream))
             {
-                neatGenome = NeatGenomeXmlIO.ReadGenome(xml, true, _neatGenomeFactory);
+                neatGenome = NeatGenomeXmlIO.ReadGenome(xml, false, _neatGenomeFactory);
             }
 
             return neatGenome;
@@ -42,10 +42,10 @@ namespace Sharp2048.Neat.Service
         public List<NeatGenome> GenerateCompleteListFromXmlString(string genomeXml)
         {
             List<NeatGenome> result = null;
-            using (var stream = new MemoryStream(Encoding.Unicode.GetBytes(genomeXml)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(genomeXml)))
             using (var xml = XmlReader.Create(stream))
             {
-                result = NeatGenomeXmlIO.ReadCompleteGenomeList(xml, true, _neatGenomeFactory);
+                result = NeatGenomeXmlIO.ReadCompleteGenomeList(xml, false, _neatGenomeFactory);
             }
 
             return result;
@@ -54,10 +54,10 @@ namespace Sharp2048.Neat.Service
         public List<NeatGenome> GenerateSimpleListFromXmlString(string genomeXml)
         {
             List<NeatGenome> result = null;
-            using (var stream = new MemoryStream(Encoding.Unicode.GetBytes(genomeXml)))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(genomeXml)))
             using (var xml = XmlReader.Create(stream))
             {
-                result = NeatGenomeXmlIO.ReadSimpleGenomeList(xml, true, _neatGenomeFactory);
+                result = NeatGenomeXmlIO.ReadSimpleGenomeList(xml, false, _neatGenomeFactory);
             }
 
             return result;

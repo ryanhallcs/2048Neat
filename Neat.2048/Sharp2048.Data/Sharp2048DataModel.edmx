@@ -6,8 +6,18 @@
     <edmx:StorageModels>
     <Schema Namespace="Sharp2048DataModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityContainer Name="Sharp2048DataModelStoreContainer">
+          <EntitySet Name="ActivationFunctions" EntityType="Sharp2048DataModel.Store.ActivationFunctions" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="Genomes" EntityType="Sharp2048DataModel.Store.Genomes" store:Type="Tables" Schema="dbo" />
         </EntityContainer>
+        <EntityType Name="ActivationFunctions">
+          <Key>
+            <PropertyRef Name="ActivationFunctionId" />
+          </Key>
+          <Property Name="ActivationFunctionId" Type="int" Nullable="false" />
+          <Property Name="Lookup" Type="nvarchar" Nullable="false" MaxLength="30" />
+          <Property Name="Description" Type="nvarchar(max)" />
+          <Property Name="FunctionString" Type="nvarchar" MaxLength="200" />
+        </EntityType>
         <EntityType Name="Genomes">
           <Key>
             <PropertyRef Name="GenomeIdentifier" />
@@ -22,6 +32,7 @@
       <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="Sharp2048DataModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
         <EntityContainer Name="Sharp2048DataModelContainer" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Genomes" EntityType="Sharp2048DataModel.Genome" />
+          <EntitySet Name="ActivationFunctions" EntityType="Sharp2048DataModel.ActivationFunction" />
         </EntityContainer>
         <EntityType Name="Genome">
           <Key>
@@ -30,6 +41,15 @@
           <Property Type="Guid" Name="GenomeIdentifier" Nullable="false" />
           <Property Type="String" Name="GenomeXml" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Type="String" Name="Description" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="ActivationFunction">
+          <Key>
+            <PropertyRef Name="ActivationFunctionId" />
+          </Key>
+          <Property Type="Int32" Name="ActivationFunctionId" Nullable="false" />
+          <Property Type="String" Name="Lookup" Nullable="false" MaxLength="30" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="Description" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="FunctionString" MaxLength="200" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -45,6 +65,16 @@
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="GenomeXml" ColumnName="GenomeXml" />
                 <ScalarProperty Name="GenomeIdentifier" ColumnName="GenomeIdentifier" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ActivationFunctions">
+            <EntityTypeMapping TypeName="Sharp2048DataModel.ActivationFunction">
+              <MappingFragment StoreEntitySet="ActivationFunctions">
+                <ScalarProperty Name="FunctionString" ColumnName="FunctionString" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Lookup" ColumnName="Lookup" />
+                <ScalarProperty Name="ActivationFunctionId" ColumnName="ActivationFunctionId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
