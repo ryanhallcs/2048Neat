@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using SharpNeat.Network;
@@ -239,7 +240,6 @@ namespace SharpNeat.Genomes.Neat
             }
 
             // Emit nodes.
-            StringBuilder sb = new StringBuilder();
             xw.WriteStartElement(__ElemNodes);
             foreach(NeuronGene nGene in genome.NeuronGeneList)
             {
@@ -388,26 +388,35 @@ namespace SharpNeat.Genomes.Neat
             // Check that activation functions in XML match that in the genome factory.
             IList<ActivationFunctionInfo> loadedActivationFnList = activationFnLib.GetFunctionList();
             IList<ActivationFunctionInfo> factoryActivationFnList = genomeFactory.ActivationFnLibrary.GetFunctionList();
+            var factoryMapping = new Dictionary<int, int>();
             if(loadedActivationFnList.Count != factoryActivationFnList.Count) {
-                throw new SharpNeatException("The activation function library loaded from XML does not match the genome factory's activation function library.");
-            }
+                foreach (var afi in loadedActivationFnList)
+                {
+                    var factoryFn =
+                        factoryActivationFnList.Cast<ActivationFunctionInfo?>().FirstOrDefault(
+                            a => a.Value.ActivationFunction.FunctionString == afi.ActivationFunction.FunctionString);
+                    if (factoryFn == null)
+                    {
+                        throw new SharpNeatException(String.Format("Activation function {0} not found in factory library", afi.ActivationFunction.FunctionString));
+                    }
 
-            for(int i=0; i<factoryActivationFnList.Count; i++) 
-            {
-                if(    (loadedActivationFnList[i].Id != factoryActivationFnList[i].Id)
-                    || (loadedActivationFnList[i].ActivationFunction.FunctionId != factoryActivationFnList[i].ActivationFunction.FunctionId)) {
-                    throw new SharpNeatException("The activation function library loaded from XML does not match the genome factory's activation function library.");
+                    factoryMapping[afi.Id] = factoryFn.Value.Id;
                 }
             }
 
             // Initialise the genome factory's genome and innovation ID generators.
             genomeFactory.GenomeIdGenerator.Reset(Math.Max(genomeFactory.GenomeIdGenerator.Peek, maxGenomeId+1));
             genomeFactory.InnovationIdGenerator.Reset(Math.Max(genomeFactory.InnovationIdGenerator.Peek, maxInnovationId+1));
-
+            
             // Retrospecitively assign the genome factory to the genomes. This is how we overcome the genome/genomeFactory
             // chicken and egg problem.
             foreach(NeatGenome genome in genomeList) {
                 genome.GenomeFactory = genomeFactory;
+
+                foreach (var gene in genome.NeuronGeneList)
+                {
+                    gene.ActivationFnId = factoryMapping[gene.ActivationFnId];
+                }
             }
 
             return genomeList;

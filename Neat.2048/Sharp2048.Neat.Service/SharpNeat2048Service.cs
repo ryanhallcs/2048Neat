@@ -9,7 +9,9 @@ using Sharp2048.Data;
 using Sharp2048.Neat.Service.Models;
 using SharpNeat.Core;
 using SharpNeat.Genomes.Neat;
+using SharpNeat.Network;
 using SharpNeat.Phenomes;
+using SharpNeat.Utility;
 
 namespace Sharp2048.Neat.Service
 {
@@ -119,7 +121,7 @@ namespace Sharp2048.Neat.Service
             for (int i = 0; i < size; i++)
                 for (int j = 0; j < size; j++)
                     phenome.InputSignalArray[i*size + j] = state[i, j];
-
+            phenome.Activate();
             var crMax = phenome.OutputSignalArray[0];
             var result = DirectionEnum.Left;
             if (phenome.OutputSignalArray[1] > crMax)

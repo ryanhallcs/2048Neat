@@ -33,7 +33,7 @@ namespace SharpNeat.Genomes.Neat
         /// </summary>
         readonly uint _innovationId;
         readonly NodeType _neuronType;
-        readonly int _activationFnId;
+        int _activationFnId;
         readonly double[] _auxState;
         readonly HashSet<uint> _srcNeurons;
         readonly HashSet<uint> _tgtNeurons;
@@ -120,6 +120,7 @@ namespace SharpNeat.Genomes.Neat
         public int ActivationFnId
         {
             get { return _activationFnId; }
+            set { _activationFnId = value; } // Hack to allow loading activation functions since they can be remapped between different systems
         }
 
         /// <summary>

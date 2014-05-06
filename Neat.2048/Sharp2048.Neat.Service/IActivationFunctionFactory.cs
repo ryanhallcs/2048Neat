@@ -9,7 +9,7 @@ namespace Sharp2048.Neat.Service
 {
     public interface IActivationFunctionFactory
     {
-        IActivationFunction GetFunction(string activationFn);
+        IActivationFunction Create(string activationFn);
         void Release(IActivationFunction function);
     }
 }

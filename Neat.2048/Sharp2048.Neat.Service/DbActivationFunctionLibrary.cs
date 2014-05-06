@@ -29,7 +29,7 @@ namespace Sharp2048.Neat.Service
                 return null;
             }
 
-            return _activationFunctionFactory.GetFunction(dbFunction.Lookup);
+            return _activationFunctionFactory.Create(dbFunction.Lookup);
         }
 
         public ActivationFunctionInfo GetRandomFunction(FastRandom rng)
@@ -38,7 +38,7 @@ namespace Sharp2048.Neat.Service
 
             var selected = allFns[rng.Next(allFns.Count)];
 
-            return new ActivationFunctionInfo(selected.ActivationFunctionId, 1.0 / allFns.Count, _activationFunctionFactory.GetFunction(selected.Lookup));
+            return new ActivationFunctionInfo(selected.ActivationFunctionId, 1.0 / allFns.Count, _activationFunctionFactory.Create(selected.Lookup));
         }
 
         public IList<ActivationFunctionInfo> GetFunctionList()
@@ -48,7 +48,7 @@ namespace Sharp2048.Neat.Service
                 _neatDb.ActivationFunctions.Select(
                     a =>
                     new ActivationFunctionInfo(a.ActivationFunctionId, 1.90/cnt,
-                                               _activationFunctionFactory.GetFunction(a.Lookup))).ToList();
+                                               _activationFunctionFactory.Create(a.Lookup))).ToList();
         }
     }
 }

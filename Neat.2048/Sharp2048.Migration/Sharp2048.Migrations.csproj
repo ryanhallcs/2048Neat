@@ -48,6 +48,7 @@
     <Compile Include="AddActivationFunctions.cs" />
     <Compile Include="AddGenomeDescription.cs" />
     <Compile Include="AddGenomesTable.cs" />
+    <Compile Include="NullFnToId0.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TimestampMigrationAttribute.cs" />
   </ItemGroup>

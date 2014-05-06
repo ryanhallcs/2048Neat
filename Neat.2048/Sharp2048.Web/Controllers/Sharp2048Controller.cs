@@ -7,6 +7,7 @@ using System.Web.Routing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sharp2048.Neat.Service;
+using Sharp2048.Neat.Service.Models;
 using Sharp2048.Web.Models;
 
 namespace Sharp2048.Web.Controllers
@@ -69,7 +70,12 @@ namespace Sharp2048.Web.Controllers
             }
             var nextMove = _neat2048Service.ProcessMove(serviceState, genomeId.Value);
 
-            return new JsonResult {Data = new { result = nextMove.ToString()}};
+            // Ugh you idiot
+            int move = 0;
+            if (nextMove == DirectionEnum.Right) move = 1;
+            if (nextMove == DirectionEnum.Down) move = 2;
+            if (nextMove == DirectionEnum.Left) move = 3;
+            return new JsonResult { Data = new { result = move } };
         }
 
         private int[,] _convertJsonState(string jsonState)

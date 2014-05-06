@@ -33,7 +33,7 @@ namespace Sharp2048.Web
                 Component.For<ISharpNeat2048Service>().ImplementedBy<SharpNeat2048Service>().LifestyleTransient());
             container.Register(
                 Classes.FromAssemblyContaining<IActivationFunction>().BasedOn<IActivationFunction>().WithServiceSelf());
-            container.Register(Component.For<IActivationFunctionFactory>().AsFactory());
+            container.Register(Component.For<IActivationFunctionFactory>().AsFactory(c => c.SelectedWith<ActivationFunctionComponentSelector>()));
             container.Register(Component.For<IActivationFunctionLibrary>().ImplementedBy<DbActivationFunctionLibrary>());
             container.Register(Component.For<NeatGenomeFactory>()
                 .DependsOn(Dependency.OnAppSettingsValue("inputNeuronCount", "InputNeuronCount"))
@@ -48,6 +48,18 @@ namespace Sharp2048.Web
             container.Register(
                 Component.For<NetworkActivationScheme>().UsingFactoryMethod(
                     (t, c) => NetworkActivationScheme.CreateCyclicFixedTimestepsScheme(1)));
+        }
+    }
+
+    public class ActivationFunctionComponentSelector : DefaultTypedFactoryComponentSelector
+    {
+        protected override string GetComponentName(System.Reflection.MethodInfo method, object[] arguments)
+        {
+            if (method.Name == "Create" && arguments.Count() > 0)
+            {
+                return (string)arguments[0];
+            }
+            return base.GetComponentName(method, arguments);
         }
     }
 }
