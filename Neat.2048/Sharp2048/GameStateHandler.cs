@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Sharp2048
+namespace Sharp2048.State
 {
     public interface IGameStateHandler
     {
@@ -52,22 +50,22 @@ namespace Sharp2048
 
         public MoveResult MoveLeft(IGameState state)
         {
-            return _move(state, GetRow, ProcessZeroesRow, Direction.Negative);
+            return _move(state, GetRow, ProcessZeroesRow, Direction.Negative, DirectionEnum.Left);
         }
 
         public MoveResult MoveRight(IGameState state)
         {
-            return _move(state, GetRow, ProcessZeroesRow, Direction.Positive);
+            return _move(state, GetRow, ProcessZeroesRow, Direction.Positive, DirectionEnum.Right);
         }
 
         public MoveResult MoveUp(IGameState state)
         {
-            return _move(state, GetCol, ProcessZeroesCol, Direction.Negative);
+            return _move(state, GetCol, ProcessZeroesCol, Direction.Negative, DirectionEnum.Up);
         }
 
         public MoveResult MoveDown(IGameState state)
         {
-            return _move(state, GetCol, ProcessZeroesCol, Direction.Positive);
+            return _move(state, GetCol, ProcessZeroesCol, Direction.Positive, DirectionEnum.Down);
         }
 
         public void AddRandomTile(IGameState state, MoveResult lastMove)
@@ -96,9 +94,9 @@ namespace Sharp2048
             state.Set(newIdx.Item1, newIdx.Item2, newVal);
         }
 
-        private MoveResult _move(IGameState state, Func<IGameState, int, IGameArray> getArray, Func<int, int, Tuple<int,int>> processZeroes, Direction direction)
+        private MoveResult _move(IGameState state, Func<IGameState, int, IGameArray> getArray, Func<int, int, Tuple<int,int>> processZeroes, Direction direction, DirectionEnum move)
         {
-            var result = new MoveResult { GameOver = true, CurrentZeros = new List<Tuple<int,int>>() };
+            var result = new MoveResult { GameOver = true, CurrentZeros = new List<Tuple<int,int>>(), MoveDirection = move };
 
             bool moved = false;
             for (int i = 0; i < state.Size; i++)
@@ -215,6 +213,8 @@ namespace Sharp2048
     public class MoveResult
     {
         public int Score { get; set; }
+
+        public DirectionEnum MoveDirection { get; set; }
 
         public int HighestBlock { get; set; }
 

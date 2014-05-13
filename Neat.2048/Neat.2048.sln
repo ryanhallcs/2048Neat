@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharp2048", "Sharp2048\Sharp2048.csproj", "{CBF2D5D5-0C81-4664-A10F-F0BE2580C37C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharp2048.State", "Sharp2048\Sharp2048.State.csproj", "{CBF2D5D5-0C81-4664-A10F-F0BE2580C37C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharp2048.Tests", "Sharp2048.Tests\Sharp2048.Tests.csproj", "{70BE2C5C-7CD7-48B6-8086-752CEA15919F}"
 EndProject

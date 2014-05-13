@@ -260,7 +260,9 @@ namespace SharpNeat.Domains.BoxesVisualDiscrimination
             IGenomeDecoder<NeatGenome,IBlackBox> genomeDecoder = CreateGenomeDecoder(_visualFieldResolution, _lengthCppnInput);
 
             // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
-            IGenomeListEvaluator<NeatGenome> innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator, _parallelOptions);
+            IGenomeListEvaluator<NeatGenome> innerEvaluator =
+                new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
+                //new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator, _parallelOptions);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.

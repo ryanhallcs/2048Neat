@@ -25,6 +25,7 @@
           <Property Name="GenomeIdentifier" Type="uniqueidentifier" Nullable="false" />
           <Property Name="GenomeXml" Type="nvarchar(max)" Nullable="false" />
           <Property Name="Description" Type="nvarchar(max)" />
+          <Property Name="EvaluatorType" Type="nvarchar" Nullable="false" MaxLength="200" />
         </EntityType>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -41,6 +42,7 @@
           <Property Type="Guid" Name="GenomeIdentifier" Nullable="false" />
           <Property Type="String" Name="GenomeXml" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Type="String" Name="Description" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="EvaluatorType" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="ActivationFunction">
           <Key>
@@ -62,6 +64,7 @@
           <EntitySetMapping Name="Genomes">
             <EntityTypeMapping TypeName="Sharp2048DataModel.Genome">
               <MappingFragment StoreEntitySet="Genomes">
+                <ScalarProperty Name="EvaluatorType" ColumnName="EvaluatorType" />
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="GenomeXml" ColumnName="GenomeXml" />
                 <ScalarProperty Name="GenomeIdentifier" ColumnName="GenomeIdentifier" />

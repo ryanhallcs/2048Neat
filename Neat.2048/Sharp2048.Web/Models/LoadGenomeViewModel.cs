@@ -14,5 +14,7 @@ namespace Sharp2048.Web.Models
         public string Description { get; set; }
 
         public string LoadedBy { get; set; }
+
+        public bool IsEvaluator { get; set; }
     }
 }

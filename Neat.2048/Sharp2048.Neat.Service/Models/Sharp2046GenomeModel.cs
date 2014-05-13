@@ -14,5 +14,7 @@ namespace Sharp2048.Neat.Service.Models
         public NeatGenome Genome { get; set; }
 
         public string Description { get; set; }
+
+        public Type EvaluatorType { get; set; }
     }
 }

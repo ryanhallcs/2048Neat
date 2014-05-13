@@ -26,6 +26,10 @@
             <p> @Html.TextAreaFor(a => a.GenomeXml)</p>
             <p>@Html.ValidationMessageFor(a => a.GenomeXml)</p>
         </div>
+        <div>
+            <p>@Html.LabelFor(a => a.IsEvaluator)</p>
+            <p> @Html.CheckBoxFor(a => a.IsEvaluator)</p>
+        </div>
         <input type="submit" class="restart-button" value="Load Genome" />
     }
 </div>

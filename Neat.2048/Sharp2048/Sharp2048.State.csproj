@@ -7,8 +7,8 @@
     <ProjectGuid>{CBF2D5D5-0C81-4664-A10F-F0BE2580C37C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Sharp2048</RootNamespace>
-    <AssemblyName>Sharp2048</AssemblyName>
+    <RootNamespace>Sharp2048.State</RootNamespace>
+    <AssemblyName>Sharp2048.State</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="IGameContoller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

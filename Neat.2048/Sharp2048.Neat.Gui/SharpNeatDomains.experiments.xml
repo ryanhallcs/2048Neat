@@ -6,15 +6,24 @@
     <AssemblyPath>SharpNeatDomains.dll</AssemblyPath>
     <ClassName>SharpNeat.Domains.Sharp2048Experiment</ClassName>
     <Config>
-      <PopulationSize>500</PopulationSize>
-      <SpecieCount>40</SpecieCount>
+      <UseHyperNeat>false</UseHyperNeat>
+      <BoardLength>4</BoardLength>
+      <PopulationSize>120</PopulationSize>
+      <SpecieCount>8</SpecieCount>
+      <MaxDepth>3</MaxDepth>
+      <ActivationCppn>
+        <Scheme>FixedIters</Scheme>
+        <Iters>4</Iters>
+      </ActivationCppn>
       <Activation>
         <Scheme>FixedIters</Scheme>
         <Iters>1</Iters>
       </Activation>
+      <LengthCppnInput>true</LengthCppnInput>
       <MaxDegreeOfParallelism>6</MaxDegreeOfParallelism>
       <ComplexityRegulationStrategy>Relative</ComplexityRegulationStrategy>
       <ComplexityThreshold>10</ComplexityThreshold>
+      <BoardEvaluator>true</BoardEvaluator>
       <Variant>2048</Variant>
       <Description>
         2048
@@ -23,7 +32,14 @@
 
         The controller is considered to have failed when there are no moves left to make.
 
-        This controller uses discretized inputs ranging from 0 to 4.
+        Outputs are four possible moves directly related to four output nodes:
+
+          Up = 0,
+          Right = 1,
+          Down = 2,
+          Left = 3
+        
+        
       </Description>
     </Config>
   </Experiment>

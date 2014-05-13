@@ -1,4 +1,9 @@
-﻿using log4net;
+﻿using Sharp2048.Neat.Service;
+using Sharp2048.State;
+using SharpNeat.Decoders.HyperNeat;
+using SharpNeat.Genomes.HyperNeat;
+using SharpNeat.Network;
+using log4net;
 using Sharp2048;
 using SharpNeat.Core;
 using SharpNeat.Decoders;
@@ -26,16 +31,25 @@ namespace SharpNeat.Domains
         NeatGenomeParameters _neatGenomeParams; 
         int _populationSize;
         int _specieCount;
+        NetworkActivationScheme _activationSchemeCppn;
         NetworkActivationScheme _activationScheme;
         string _complexityRegulationStr;
         int? _complexityThreshold;
         string _variantStr;
         string _description;
         ParallelOptions _parallelOptions;
+        private bool _lengthCppnInput;
+        private bool _useHyperNeat;
+        private bool _isBoardEvaluator;
+
+        private int _maxDepth = 4;
+        private int _boardLength;
 
         public AbstractGenomeView CreateGenomeView()
         {
-            return new NeatGenomeView();
+            return _useHyperNeat
+            ? (AbstractGenomeView) new CppnGenomeView(GetCppnActivationFunctionLibrary()) 
+            : new NeatGenomeView();
         }
 
         public AbstractDomainView CreateDomainView()
@@ -47,8 +61,8 @@ namespace SharpNeat.Domains
 
         public string Description { get; set; }
 
-        public int InputCount { get { return 16; } }
-        public int OutputCount { get { return 4; } }
+        public int InputCount { get { return _useHyperNeat ? (_lengthCppnInput ? 7 : 6) : 16; } }
+        public int OutputCount { get { return _useHyperNeat ? 2 : 1; } }
 
         public int DefaultPopulationSize { get; set; }
 
@@ -66,22 +80,34 @@ namespace SharpNeat.Domains
             get { return _neatGenomeParams; }
         }
 
-        public void Initialize(string name, System.Xml.XmlElement xmlConfig)
+        public void Initialize(string name, XmlElement xmlConfig)
         {
             Name = name;
 
             _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
             _specieCount = XmlUtils.GetValueAsInt(xmlConfig, "SpecieCount");
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
+            _activationSchemeCppn = ExperimentUtils.CreateActivationScheme(xmlConfig, "ActivationCppn");
             _complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlConfig, "ComplexityRegulationStrategy");
             _complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
             _variantStr = XmlUtils.TryGetValueAsString(xmlConfig, "Variant");
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
+            _lengthCppnInput = XmlUtils.GetValueAsBool(xmlConfig, "LengthCppnInput");
+            _useHyperNeat = XmlUtils.GetValueAsBool(xmlConfig, "UseHyperNeat");
+            _boardLength = XmlUtils.GetValueAsInt(xmlConfig, "BoardLength");
+            _maxDepth = XmlUtils.TryGetValueAsInt(xmlConfig, "MaxDepth") ?? _maxDepth;
+            _isBoardEvaluator = XmlUtils.GetValueAsBool(xmlConfig, "BoardEvaluator");
 
             _eaParams = new NeatEvolutionAlgorithmParameters();
             _eaParams.SpecieCount = _specieCount;
             _neatGenomeParams = new NeatGenomeParameters();
+
+            _neatGenomeParams.AddConnectionMutationProbability = 0.1;
+            _neatGenomeParams.AddNodeMutationProbability = 0.01;
+            _neatGenomeParams.ConnectionWeightMutationProbability = 0.9865;
+            _neatGenomeParams.DeleteConnectionMutationProbability = 0.01;
+            _neatGenomeParams.DeleteSimpleNeuronMutationProbability = 0.001;
 
             DefaultPopulationSize = _populationSize;
             Description = _description;
@@ -107,7 +133,53 @@ namespace SharpNeat.Domains
 
         public IGenomeDecoder<NeatGenome, IBlackBox> CreateGenomeDecoder()
         {
-            return new NeatGenomeDecoder(_activationScheme);
+            return _useHyperNeat 
+                ? CreateHyperNeatGenomeDecoder() 
+                : new NeatGenomeDecoder(_activationScheme);
+        }
+
+        public IGenomeDecoder<NeatGenome, IBlackBox> CreateHyperNeatGenomeDecoder()
+        {
+            var boardSize = _boardLength * _boardLength;
+            // Create 3 layer 'sandwich' substrate.
+            var inputLayer = new SubstrateNodeSet();
+            var hiddenLayer = new SubstrateNodeSet();
+            var outputLayer = new SubstrateNodeSet(); 
+
+            // Node IDs start at 1. (bias node is always zero).
+            uint inputId = 1;
+            uint outputId = (uint)(boardSize + inputId);
+            uint hiddenId = (uint)(outputId + 1);
+
+            for (int y = 0; y < _boardLength; y++)
+            {
+                for (int x = 0; x < _boardLength; x++, inputId++, hiddenId++)
+                {
+                    inputLayer.NodeList.Add(new SubstrateNode(inputId, new double[] { x, y, -1.0 }));
+                    hiddenLayer.NodeList.Add(new SubstrateNode(hiddenId, new double[] { x, y, 0.0 }));
+                }
+            }
+
+            // Just 1 output - the board evaluation result
+            outputLayer.NodeList.Add(new SubstrateNode(outputId, new double[] { 0, 0, 1.0 }));
+
+            var nodeSetList = new List<SubstrateNodeSet>();
+            nodeSetList.Add(inputLayer);
+            nodeSetList.Add(outputLayer);
+            nodeSetList.Add(hiddenLayer);
+
+            // Define connection mappings between layers/sets.
+            var nodeSetMappingList = new List<NodeSetMapping>();
+            nodeSetMappingList.Add(NodeSetMapping.Create(0, 2, (double?)null));
+            nodeSetMappingList.Add(NodeSetMapping.Create(2, 1, (double?)null));
+
+
+            // Construct substrate.
+            var substrate = new Substrate(nodeSetList, GetCppnActivationFunctionLibrary(), 0, 0.2, 5, nodeSetMappingList);
+
+            // Create genome decoder. Decodes to a neural network packaged with an activation scheme that defines a fixed number of activations per evaluation.
+            var genomeDecoder = new HyperNeatDecoder(substrate, _activationSchemeCppn, _activationScheme, _lengthCppnInput);
+            return genomeDecoder;
         }
 
         /// <summary>
@@ -116,7 +188,9 @@ namespace SharpNeat.Domains
         /// </summary>
         public IGenomeFactory<NeatGenome> CreateGenomeFactory()
         {
-            return new NeatGenomeFactory(InputCount, OutputCount, _neatGenomeParams);
+            return _useHyperNeat
+            ? new CppnGenomeFactory(InputCount, OutputCount, GetCppnActivationFunctionLibrary(), _neatGenomeParams)
+            : new NeatGenomeFactory(InputCount, OutputCount, _neatGenomeParams);
         }
 
         /// <summary>
@@ -141,7 +215,7 @@ namespace SharpNeat.Domains
             return CreateEvolutionAlgorithm(genomeFactory, genomeList);
         }
 
-        public SharpNeat.EvolutionAlgorithms.NeatEvolutionAlgorithm<SharpNeat.Genomes.Neat.NeatGenome> CreateEvolutionAlgorithm(SharpNeat.Core.IGenomeFactory<SharpNeat.Genomes.Neat.NeatGenome> genomeFactory, List<SharpNeat.Genomes.Neat.NeatGenome> genomeList)
+        public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(IGenomeFactory<NeatGenome> genomeFactory, List<NeatGenome> genomeList)
         {
             // Create distance metric. Mismatched genes have a fixed distance of 10; for matched genes the distance is their weigth difference.
             var distanceMetric = new ManhattanDistanceMetric(1.0, 0.0, 10.0);
@@ -154,14 +228,23 @@ namespace SharpNeat.Domains
             var ea = new NeatEvolutionAlgorithm<NeatGenome>(_eaParams, speciationStrategy, complexityRegulationStrategy);
             
             // Create IBlackBox evaluator.
-            var evaluator = new Sharp2048Evaluator(() => new Sharp2048GameController(new GameState(4), new GameStateHandler()));
+            IGenome2048Ai boardEvaluator = null;
+            if (_isBoardEvaluator)
+            {
+                boardEvaluator = new BoardEvaluatorMinimax2048Ai(_maxDepth);
+            }
+            else
+            {
+                boardEvaluator = new DirectMover2048Ai();
+            }
+            var evaluator = new Sharp2048Evaluator(() => new Sharp2048GameController(new GameState(_boardLength), new GameStateHandler()), boardEvaluator);
 
             // Create genome decoder.
             var genomeDecoder = CreateGenomeDecoder();
 
             // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
-            //var innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
-            var innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator, _parallelOptions);
+            var innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
+            //var innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator, _parallelOptions);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.
@@ -173,6 +256,11 @@ namespace SharpNeat.Domains
 
             // Finished. Return the evolution algorithm
             return ea;
+        }
+            
+        private IActivationFunctionLibrary GetCppnActivationFunctionLibrary()
+        {
+            return DefaultActivationFunctionLibrary.CreateLibraryCppn();
         }
     }
 }

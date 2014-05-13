@@ -233,6 +233,10 @@
       <Project>{55ed359f-cada-43fe-a6f2-04da72a6f934}</Project>
       <Name>Sharp2048.Neat.Service</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Sharp2048\Sharp2048.State.csproj">
+      <Project>{CBF2D5D5-0C81-4664-A10F-F0BE2580C37C}</Project>
+      <Name>Sharp2048.State</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SharpNeatLib\SharpNeatLib.csproj">
       <Project>{4DEC6D15-6A86-4A2D-A458-A8F90E827C38}</Project>
       <Name>SharpNeatLib</Name>

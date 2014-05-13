@@ -66,9 +66,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sharp2048\Sharp2048.csproj">
+    <ProjectReference Include="..\Sharp2048\Sharp2048.State.csproj">
       <Project>{cbf2d5d5-0c81-4664-a10f-f0be2580c37c}</Project>
-      <Name>Sharp2048</Name>
+      <Name>Sharp2048.State</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpNeatLib\SharpNeatLib.csproj">
       <Project>{4dec6d15-6a86-4a2d-a458-a8f90e827c38}</Project>

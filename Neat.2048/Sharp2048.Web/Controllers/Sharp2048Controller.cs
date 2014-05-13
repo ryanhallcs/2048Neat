@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sharp2048.Neat.Service;
 using Sharp2048.Neat.Service.Models;
+using Sharp2048.State;
 using Sharp2048.Web.Models;
 
 namespace Sharp2048.Web.Controllers
@@ -37,7 +38,8 @@ namespace Sharp2048.Web.Controllers
         {
             model = model ?? new LoadGenomeViewModel();
 
-            var savedGenome = _neat2048Service.SaveNewGenome(model.Description, model.LoadedBy, model.GenomeXml);
+            var evalType = model.IsEvaluator ? typeof (BoardEvaluatorMinimax2048Ai) : typeof (DirectMover2048Ai);
+            var savedGenome = _neat2048Service.SaveNewGenome(model.Description, model.LoadedBy, model.GenomeXml, evalType.ToString());
 
             if (savedGenome == null)
             {
@@ -68,14 +70,10 @@ namespace Sharp2048.Web.Controllers
             {
                 return new EmptyResult();
             }
-            var nextMove = _neat2048Service.ProcessMove(serviceState, genomeId.Value);
+            var controller = new Sharp2048GameController(new GameState(serviceState), new GameStateHandler()); // TODO: don't just new() stuff up
+            var nextMove = _neat2048Service.ProcessMove(controller, genomeId.Value);
 
-            // Ugh you idiot
-            int move = 0;
-            if (nextMove == DirectionEnum.Right) move = 1;
-            if (nextMove == DirectionEnum.Down) move = 2;
-            if (nextMove == DirectionEnum.Left) move = 3;
-            return new JsonResult { Data = new { result = move } };
+            return new JsonResult { Data = new { result = (int)nextMove } };
         }
 
         private int[,] _convertJsonState(string jsonState)

@@ -48,6 +48,8 @@
   <ItemGroup>
     <Compile Include="DbActivationFunctionLibrary.cs" />
     <Compile Include="IActivationFunctionFactory.cs" />
+    <Compile Include="IEvaluatorFactory.cs" />
+    <Compile Include="IGenome2048AI.cs" />
     <Compile Include="IGenomeGenerator.cs" />
     <Compile Include="Models\Enums.cs" />
     <Compile Include="Models\Sharp2046GenomeModel.cs" />
@@ -58,6 +60,10 @@
     <ProjectReference Include="..\Sharp2048.Data\Sharp2048.Data.csproj">
       <Project>{b4ab2c99-746d-44c5-a412-558380924753}</Project>
       <Name>Sharp2048.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Sharp2048\Sharp2048.State.csproj">
+      <Project>{cbf2d5d5-0c81-4664-a10f-f0be2580c37c}</Project>
+      <Name>Sharp2048.State</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpNeatLib\SharpNeatLib.csproj">
       <Project>{4dec6d15-6a86-4a2d-a458-a8f90e827c38}</Project>

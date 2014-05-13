@@ -17,5 +17,6 @@ namespace Sharp2048.Data
         public System.Guid GenomeIdentifier { get; set; }
         public string GenomeXml { get; set; }
         public string Description { get; set; }
+        public string EvaluatorType { get; set; }
     }
 }

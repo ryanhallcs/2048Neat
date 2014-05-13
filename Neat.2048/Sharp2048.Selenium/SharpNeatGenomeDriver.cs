@@ -1,4 +1,5 @@
-﻿using SharpNeat.Phenomes;
+﻿using Sharp2048.State;
+using SharpNeat.Phenomes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

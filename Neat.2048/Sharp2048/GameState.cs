@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Sharp2048
+namespace Sharp2048.State
 {
     public interface IGameState
     {
@@ -12,6 +9,8 @@ namespace Sharp2048
         void Reset();
         void Set(int row, int col, int val);
         int Get(int row, int col);
+
+        IGameState Clone();
 
         IGameArray GetRow(int rowIdx);
         IGameArray GetCol(int colIdx);
@@ -22,6 +21,7 @@ namespace Sharp2048
 
         bool[,] GetZeroState();
     }
+
     public class GameState : IGameState
     {
         private int[,] _internalArray;
@@ -42,6 +42,34 @@ namespace Sharp2048
                 _rows[i] = new GameArray(this, i, GameArrayType.Row);
                 _cols[i] = new GameArray(this, i, GameArrayType.Column);
             }
+        }
+
+        public GameState(int[,] presetState)
+        {
+            _size = presetState.GetLength(0);
+            _internalArray = presetState;
+            _rows = new IGameArray[_size];
+            _cols = new IGameArray[_size];
+            for (int i = 0; i < _size; i++)
+            {
+                _rows[i] = new GameArray(this, i, GameArrayType.Row);
+                _cols[i] = new GameArray(this, i, GameArrayType.Column);
+            }
+        }
+
+        public IGameState Clone()
+        {
+            var result = new GameState(_size);
+
+            for (int i = 0; i < _size; i++ )
+            {
+                for (int j=0; j<_size; j++ )
+                {
+                    result.Set(i, j, _internalArray[i,j]);
+                }
+            }
+
+            return result;
         }
 
         public void Reset()

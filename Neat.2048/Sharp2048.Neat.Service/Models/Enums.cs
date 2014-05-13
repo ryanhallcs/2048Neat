@@ -8,9 +8,9 @@ namespace Sharp2048.Neat.Service.Models
 {
     public enum DirectionEnum
     {
-        Left = 0,
+        Up = 0,
         Right = 1,
         Down = 2,
-        Up = 3
+        Left = 3
     }
 }

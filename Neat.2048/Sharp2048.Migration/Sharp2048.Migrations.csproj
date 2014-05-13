@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddActivationFunctions.cs" />
+    <Compile Include="AddEvaluator.cs" />
     <Compile Include="AddGenomeDescription.cs" />
     <Compile Include="AddGenomesTable.cs" />
     <Compile Include="NullFnToId0.cs" />

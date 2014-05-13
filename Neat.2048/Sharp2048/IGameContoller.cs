@@ -1,11 +1,6 @@
-﻿using Sharp2048;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
-namespace Sharp2048
+namespace Sharp2048.State
 {
     public interface IGameContoller
     {
@@ -22,8 +17,11 @@ namespace Sharp2048
         bool MovedLastTurn();
 
         int HighestSeenBlock { get; }
+        MoveResult LastMove { get; }
 
         string GetStateString();
+
+        IGameContoller Clone();
     }
 
     public class Sharp2048GameController : IGameContoller
@@ -85,6 +83,11 @@ namespace Sharp2048
             }
         }
 
+        public void InjectLastMove(MoveResult lastMove)
+        {
+            _lastMoveResult = lastMove;
+        }
+
         public bool IsFinished()
         {
             if (_lastMoveResult == null)
@@ -135,10 +138,22 @@ namespace Sharp2048
             get { return _highestSeen; }
         }
 
+        public MoveResult LastMove
+        {
+            get { return _lastMoveResult; }
+        }
 
         public string GetStateString()
         {
             return _gameState.ToString();
+        }
+
+        public IGameContoller Clone()
+        {
+            var result = new Sharp2048GameController(_gameState.Clone(), _handler);
+            result.InjectLastMove(_lastMoveResult);
+
+            return result;
         }
     }
 }
