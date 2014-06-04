@@ -31,15 +31,18 @@
         Popularized by http://gabrielecirulli.github.io/2048/, this is an evolution to get the maximum possible score of moving and merging these power of 2 tiles
 
         The controller is considered to have failed when there are no moves left to make.
-
-        Outputs are four possible moves directly related to four output nodes:
-
-          Up = 0,
-          Right = 1,
-          Down = 2,
-          Left = 3
         
+        The BoardEvaluator configuration tag here denotes which version of the AI the evaluator should use. 
+          - Board Evaluator: have the neural network evaluate a board position and utilize a Minimax algorithm with a max search depth in the MaxDepth tag
+          - Regular: (can't be used with HyperNEAT) 
+                Outputs are four possible moves directly related to four output nodes:
+                  Up = 0,
+                  Right = 1,
+                  Down = 2,
+                  Left = 3
+                 Where the strongest signal of these outputs determines which move is made.
         
+        ** The BoardLength is variable but untested
       </Description>
     </Config>
   </Experiment>
