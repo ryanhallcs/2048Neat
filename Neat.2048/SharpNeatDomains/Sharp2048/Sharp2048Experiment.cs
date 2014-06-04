@@ -109,6 +109,11 @@ namespace SharpNeat.Domains
             _neatGenomeParams.DeleteConnectionMutationProbability = 0.01;
             _neatGenomeParams.DeleteSimpleNeuronMutationProbability = 0.001;
 
+            if (_activationScheme.AcyclicNetwork)
+            {
+                _neatGenomeParams.FeedforwardOnly = true;
+            }
+
             DefaultPopulationSize = _populationSize;
             Description = _description;
         }
@@ -243,8 +248,8 @@ namespace SharpNeat.Domains
             var genomeDecoder = CreateGenomeDecoder();
 
             // Create a genome list evaluator. This packages up the genome decoder with the genome evaluator.
-            var innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
-            //var innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator, _parallelOptions);
+            //var innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator);
+            var innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, evaluator, _parallelOptions);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.

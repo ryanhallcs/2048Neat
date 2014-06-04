@@ -23,6 +23,7 @@ namespace Sharp2048.Web
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             container.AddFacility<TypedFactoryFacility>();
+            container.Register(Component.For<TypeNameComponentSelector>());
 
             // Controllers
             container.Register(
@@ -32,7 +33,9 @@ namespace Sharp2048.Web
             container.Register(
                 Component.For<ISharpNeat2048Service>().ImplementedBy<SharpNeat2048Service>().LifestyleTransient());
             container.Register(
-                Classes.FromAssemblyContaining<IActivationFunction>().BasedOn<IActivationFunction>().WithServiceSelf());
+                Classes.FromAssemblyContaining<IActivationFunction>().BasedOn<IActivationFunction>().Configure(c => c.Named(c.Implementation.Name)));
+            container.Register(
+                Classes.FromAssemblyContaining<IGenome2048Ai>().BasedOn<IGenome2048Ai>().Configure(c => c.Named(c.Implementation.FullName)));
             container.Register(Component.For<IActivationFunctionFactory>().AsFactory(c => c.SelectedWith<TypeNameComponentSelector>()));
             container.Register(Component.For<IEvaluatorFactory>().AsFactory(c => c.SelectedWith<TypeNameComponentSelector>()));
             container.Register(Component.For<IActivationFunctionLibrary>().ImplementedBy<DbActivationFunctionLibrary>());
@@ -40,7 +43,7 @@ namespace Sharp2048.Web
                 .DependsOn(Dependency.OnAppSettingsValue("inputNeuronCount", "InputNeuronCount"))
                 .DependsOn(Dependency.OnAppSettingsValue("outputNeuronCount", "OutputNeuronCount")));
             container.Register(Component.For<IGenomeGenerator>().ImplementedBy<GenomeGenerator>());
-
+            
             // DB
             container.Register(Component.For<Sharp2048DataModelContainer>().LifestyleTransient());
 

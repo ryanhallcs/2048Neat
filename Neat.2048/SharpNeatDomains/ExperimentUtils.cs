@@ -52,6 +52,8 @@ namespace SharpNeat.Domains
                     double deltaThreshold = XmlUtils.GetValueAsInt(xmlActivation, "Threshold");
                     int maxIters = XmlUtils.GetValueAsInt(xmlActivation, "MaxIters");
                     return NetworkActivationScheme.CreateCyclicRelaxingActivationScheme(deltaThreshold, maxIters);
+                case "Acyclic":
+                    return NetworkActivationScheme.CreateAcyclicScheme();
             }
             throw new ArgumentException(string.Format("Invalid or missing ActivationScheme XML config setting [{0}]", schemeStr));
         }

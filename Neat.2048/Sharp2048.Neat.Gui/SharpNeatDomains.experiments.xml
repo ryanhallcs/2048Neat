@@ -12,7 +12,7 @@
       <SpecieCount>8</SpecieCount>
       <MaxDepth>3</MaxDepth>
       <ActivationCppn>
-        <Scheme>FixedIters</Scheme>
+        <Scheme>Acyclic</Scheme>
         <Iters>4</Iters>
       </ActivationCppn>
       <Activation>
